@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDFClarify — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:            #F5F3F0;
+      --surface:       #FFFFFF;
+      --surface-muted: #F0EEEA;
+      --primary:       #145DA0;
+      --primary-hover: #0F4C81;
+      --text-main:     #111827;
+      --text-muted:    #6B7280;
+      --text-faint:    #9CA3AF;
+      --border:        rgba(15, 23, 42, 0.08);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .doc-counter {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: 100px;
+      background: var(--surface-muted);
+      color: var(--text-muted);
+    }
+    .doc-counter.warning {
+      background: rgba(239,68,68,0.08);
+      color: #DC2626;
+    }
+
+    .badge-pro {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 100px;
+      background: rgba(20,93,160,0.1);
+      color: var(--primary);
+    }
+
+    .btn-upgrade {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-upgrade:hover { background: var(--primary-hover); }
+
+    .nav-email {
+      font-size: 13px;
+      color: var(--text-muted);
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .btn-signout {
+      background: none;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: var(--text-faint);
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: color 0.15s;
+    }
+    .btn-signout:hover { color: var(--text-main); }
+
+    /* ── Layout ─────────────────────────────────────── */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 24px 64px;
+      max-width: 920px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* ── Step Indicator ─────────────────────────────── */
+    .steps {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 36px;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-faint);
+      transition: color 0.2s;
+    }
+    .step-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--surface-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-faint);
+      transition: background 0.2s, color 0.2s;
+    }
+    .step.active { color: var(--text-main); }
+    .step.active .step-num { background: var(--primary); color: #fff; }
+    .step.done .step-num { background: #22c55e; color: #fff; }
+    .step.done { color: var(--text-muted); }
+    .step-divider { width: 32px; height: 1px; background: var(--border); }
+
+    /* ── Helpers ────────────────────────────────────── */
+    .hidden { display: none !important; }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 11px 22px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-secondary:hover { background: var(--surface-muted); }
+
+    /* ── Error box ─────────────────────────────────── */
+    .error-box {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-size: 13px;
+      color: #DC2626;
+      margin-top: 16px;
+    }
+    .error-box.visible { display: flex; }
+
+    /* ── Upload Step ────────────────────────────────── */
+    #upload-step { width: 100%; }
+
+    .upload-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px;
+      width: 100%;
+    }
+
+    .drop-zone {
+      border: 2px dashed rgba(20,93,160,0.22);
+      border-radius: 12px;
+      padding: 48px 24px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: rgba(20,93,160,0.02);
+      text-align: center;
+      position: relative;
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: var(--primary);
+      background: rgba(20,93,160,0.04);
+    }
+    .drop-zone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer;
+    }
+    .drop-icon {
+      width: 48px; height: 48px;
+      background: rgba(20,93,160,0.08);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+      color: var(--primary);
+    }
+    .drop-zone h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .drop-zone p  { font-size: 14px; color: var(--text-muted); }
+    .drop-zone p span { color: var(--primary); font-weight: 500; }
+    .file-limit  { font-size: 12px; color: var(--text-faint); margin-top: 6px; }
+
+    .file-chip {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: rgba(20,93,160,0.05);
+      border: 1.5px solid rgba(20,93,160,0.18);
+      border-radius: 10px;
+      margin-top: 16px;
+    }
+    .file-chip.visible { display: flex; }
+    .file-chip-icon {
+      width: 36px; height: 36px;
+      background: rgba(20,93,160,0.1);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+    .file-chip-info { flex: 1; min-width: 0; }
+    .file-chip-info strong { font-size: 13px; font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-chip-info span  { font-size: 12px; color: var(--text-muted); }
+    .file-chip-remove {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-faint); padding: 4px; border-radius: 4px; transition: color 0.15s;
+    }
+    .file-chip-remove:hover { color: #dc2626; }
+
+    /* Mode selector */
+    .mode-section { margin-top: 28px; }
+    .section-title {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--text-faint); margin-bottom: 12px;
+    }
+    .modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .mode-card {
+      border: 1.5px solid var(--border); border-radius: 10px;
+      padding: 14px; cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      background: var(--surface);
+    }
+    .mode-card:hover  { border-color: rgba(20,93,160,0.3); background: rgba(20,93,160,0.02); }
+    .mode-card.selected { border-color: var(--primary); background: rgba(20,93,160,0.04); }
+    .mode-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; margin-bottom: 10px;
+    }
+    .mode-card h5 { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+    .mode-card p  { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+    .actions-row {
+      display: flex; align-items: center; justify-content: flex-end;
+      margin-top: 24px;
+    }
+    .limit-hint { font-size: 12px; color: var(--text-faint); flex: 1; }
+    .limit-hint a { color: var(--primary); font-weight: 500; cursor: pointer; }
+
+    /* ── Processing Step ────────────────────────────── */
+    #processing-step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 56px 40px;
+      width: 100%;
+      text-align: center;
+    }
+    .spinner {
+      width: 44px; height: 44px;
+      border: 3px solid var(--surface-muted);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #processing-step h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+    #processing-step > p { color: var(--text-muted); font-size: 14px; margin-bottom: 36px; }
+    .progress-steps {
+      text-align: left; display: inline-flex;
+      flex-direction: column; gap: 0;
+    }
+    .prog-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 9px 0; font-size: 13px; color: var(--text-faint);
+      transition: color 0.2s;
+    }
+    .prog-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--border); flex-shrink: 0; transition: background 0.2s;
+    }
+    .prog-item.active { color: var(--primary); font-weight: 500; }
+    .prog-item.active .prog-dot { background: var(--primary); animation: pulse 1s ease-in-out infinite; }
+    .prog-item.done { color: var(--text-main); }
+    .prog-item.done .prog-dot { background: #22c55e; }
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.75); } }
+
+    /* ── Results Step ───────────────────────────────── */
+    #results-step {
+      display: none;
+      grid-template-columns: 220px 1fr;
+      gap: 20px;
+      width: 100%;
+    }
+    #results-step.visible { display: grid; }
+
+    .pdf-sidebar {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 20px; height: fit-content;
+    }
+    .pdf-thumb {
+      background: var(--surface-muted); border-radius: 10px;
+      aspect-ratio: 3/4;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      margin-bottom: 16px; color: var(--primary); position: relative; overflow: hidden;
+    }
+    .pdf-thumb::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 4px; background: var(--primary);
+    }
+    .pdf-thumb svg { width: 32px; height: 32px; margin-bottom: 6px; }
+    .pdf-thumb span { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: var(--text-faint); }
+    .pdf-filename { font-size: 13px; font-weight: 600; margin-bottom: 8px; word-break: break-all; line-height: 1.4; }
+    .pdf-meta { display: flex; flex-direction: column; gap: 4px; }
+    .pdf-meta-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); }
+    .pdf-meta-row span:last-child { color: var(--text-main); font-weight: 500; }
+    .pdf-meta-row span.primary { color: var(--primary); }
+    .btn-reset {
+      margin-top: 16px; width: 100%;
+      background: var(--surface-muted); color: var(--text-muted);
+      border: 1px solid var(--border); padding: 8px 14px;
+      border-radius: 8px; font-size: 12px; font-weight: 500;
+      cursor: pointer; font-family: 'Inter', sans-serif; transition: background 0.15s, color 0.15s;
+    }
+    .btn-reset:hover { background: var(--bg); color: var(--text-main); }
+
+    /* Results panel */
+    .results-panel {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;
+    }
+    .results-header {
+      padding: 14px 20px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .tabs { display: flex; gap: 2px; }
+    .tab {
+      padding: 7px 14px; font-size: 13px; font-weight: 500;
+      color: var(--text-muted); cursor: pointer; border-radius: 7px;
+      transition: background 0.15s, color 0.15s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .tab:hover { color: var(--text-main); }
+    .tab.active { background: rgba(20,93,160,0.08); color: var(--primary); }
+
+    .copy-btn {
+      background: var(--surface-muted); border: 1px solid var(--border);
+      color: var(--text-muted); padding: 7px 14px; border-radius: 7px;
+      font-size: 12px; font-weight: 500; cursor: pointer;
+      font-family: 'Inter', sans-serif; transition: all 0.15s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .copy-btn:hover { background: var(--bg); color: var(--text-main); }
+    .copy-btn.copied { color: #16a34a; border-color: #16a34a; background: rgba(22,163,74,0.05); }
+
+    .tab-content { padding: 24px; display: none; animation: fadeUp 0.2s ease; }
+    .tab-content.active { display: block; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    .content-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 16px;
+    }
+    .result-body { font-size: 14px; line-height: 1.8; color: var(--text-main); white-space: pre-wrap; }
+
+    /* Results footer */
+    .results-footer {
+      padding: 14px 20px; border-top: 1px solid var(--border);
+      background: var(--surface-muted); display: flex;
+      gap: 10px; flex-shrink: 0; align-items: center;
+    }
+    .results-footer .spacer { flex: 1; }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .modes { grid-template-columns: 1fr; }
+      #results-step { grid-template-columns: 1fr; }
+      .pdf-sidebar { display: none; }
+      main { padding: 32px 16px 48px; }
+      .nav-email { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Auth gate (hidden until API responds) ── -->
+  <div id="auth-loading" style="position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;">
+    <div style="width:36px;height:36px;border:3px solid var(--surface-muted);border-top-color:var(--primary);border-radius:50%;animation:spin 0.75s linear infinite;"></div>
+  </div>
+
+  <!-- ── Header ─────────────────────────────────── -->
+  <header>
+    <div class="logo">
+      <i data-lucide="file-text" style="width:18px;height:18px"></i>
+      PDFClarify
+    </div>
+    <div class="nav-right" id="nav-right" style="display:none;">
+      <span class="doc-counter hidden" id="doc-counter"></span>
+      <span class="badge-pro hidden"   id="badge-pro">Pro</span>
+      <button class="btn-upgrade hidden" id="btn-upgrade">Upgrade →</button>
+      <span class="nav-email" id="nav-email"></span>
+      <button class="btn-signout" id="btn-signout">Sign out</button>
+    </div>
+  </header>
+
+  <!-- ── Main ───────────────────────────────────── -->
+  <main>
+
+    <!-- Step Indicator -->
+    <div class="steps">
+      <div class="step active" id="s1"><div class="step-num" id="s1-num">1</div> Upload</div>
+      <div class="step-divider"></div>
+      <div class="step" id="s2"><div class="step-num" id="s2-num">2</div> Analyze</div>
+      <div class="step-divider"></div>
+      <div class="step" id="s3"><div class="step-num" id="s3-num">3</div> Results</div>
+    </div>
+
+    <!-- ── Step 1: Upload ──────────────────────── -->
+    <div id="upload-step">
+      <div class="upload-card">
+
+        <div class="drop-zone" id="drop-zone">
+          <input type="file" accept=".pdf,application/pdf" id="file-input">
+          <div class="drop-icon"><i data-lucide="upload-cloud" style="width:22px;height:22px"></i></div>
+          <h3>Drop your PDF here</h3>
+          <p>or <span>browse from your computer</span></p>
+          <p class="file-limit">PDF only · Max 20 MB</p>
+        </div>
+
+        <div class="file-chip" id="file-chip">
+          <div class="file-chip-icon"><i data-lucide="file-text" style="width:18px;height:18px"></i></div>
+          <div class="file-chip-info">
+            <strong id="chip-name">—</strong>
+            <span id="chip-size">—</span>
+          </div>
+          <button class="file-chip-remove" id="remove-file" title="Remove">
+            <i data-lucide="x" style="width:15px;height:15px"></i>
+          </button>
+        </div>
+
+        <div class="mode-section">
+          <div class="section-title">Analysis type</div>
+          <div class="modes">
+            <div class="mode-card selected" data-mode="summary" id="mode-summary">
+              <div class="mode-icon" style="background:rgba(20,93,160,0.1);color:var(--primary)">
+                <i data-lucide="list" style="width:16px;height:16px"></i>
+              </div>
+              <h5>Summary</h5>
+              <p>Key points and main ideas</p>
+            </div>
+            <div class="mode-card" data-mode="actions" id="mode-actions">
+              <div class="mode-icon" style="background:rgba(5,150,105,0.1);color:#059669">
+                <i data-lucide="check-square" style="width:16px;height:16px"></i>
+              </div>
+              <h5>Action Items</h5>
+              <p>Tasks and next steps</p>
+            </div>
+            <div class="mode-card" data-mode="risks" id="mode-risks">
+              <div class="mode-icon" style="background:rgba(239,68,68,0.1);color:#dc2626">
+                <i data-lucide="alert-triangle" style="width:16px;height:16px"></i>
+              </div>
+              <h5>Key Risks</h5>
+              <p>Issues and concerns</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions-row">
+          <p class="limit-hint" id="limit-hint">Powered by Gemini 2.0 Flash</p>
+          <button class="btn-primary" id="analyze-btn" disabled>
+            <i data-lucide="sparkles" style="width:14px;height:14px"></i>
+            Analyze PDF
+          </button>
+        </div>
+
+        <div class="error-box" id="upload-error">
+          <i data-lucide="alert-circle" style="width:14px;height:14px;flex-shrink:0"></i>
+          <span id="upload-error-text"></span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Step 2: Processing ──────────────────── -->
+    <div id="processing-step" class="hidden">
+      <div class="spinner"></div>
+      <h3>Analyzing your document…</h3>
+      <p>Gemini 2.0 Flash is reading and processing your PDF</p>
+      <div class="progress-steps">
+        <div class="prog-item active" id="p1"><div class="prog-dot"></div> Uploading PDF…</div>
+        <div class="prog-item"        id="p2"><div class="prog-dot"></div> Reading document…</div>
+        <div class="prog-item"        id="p3"><div class="prog-dot"></div> Running AI analysis…</div>
+        <div class="prog-item"        id="p4"><div class="prog-dot"></div> Finalizing results…</div>
+      </div>
+    </div>
+
+    <!-- ── Step 3: Results ─────────────────────── -->
+    <div id="results-step">
+
+      <!-- Sidebar -->
+      <div class="pdf-sidebar">
+        <div class="pdf-thumb">
+          <i data-lucide="file-text"></i>
+          <span>PDF</span>
+        </div>
+        <div class="pdf-filename" id="res-filename">—</div>
+        <div class="pdf-meta">
+          <div class="pdf-meta-row"><span>Mode</span><span id="res-mode" class="primary">—</span></div>
+          <div class="pdf-meta-row" id="res-time-row" style="display:none;">
+            <span>Time</span><span id="res-time" class="primary">—</span>
+          </div>
+        </div>
+        <button class="btn-reset" id="reset-btn">+ New analysis</button>
+      </div>
+
+      <!-- Results panel -->
+      <div class="results-panel">
+        <div class="results-header">
+          <div class="tabs">
+            <div class="tab active" data-tab="summary">
+              <i data-lucide="list" style="width:13px;height:13px"></i> Summary
+            </div>
+            <div class="tab" data-tab="actions">
+              <i data-lucide="check-square" style="width:13px;height:13px"></i> Actions
+            </div>
+            <div class="tab" data-tab="risks">
+              <i data-lucide="alert-triangle" style="width:13px;height:13px"></i> Risks
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="copy-btn" id="copy-btn">
+              <i data-lucide="copy" style="width:12px;height:12px"></i> Copy
+            </button>
+            <button class="copy-btn" id="export-btn">
+              <i data-lucide="download" style="width:12px;height:12px"></i> Export .md
+            </button>
+          </div>
+        </div>
+
+        <div class="tab-content active" id="tab-summary">
+          <div class="content-label">Summary</div>
+          <div class="result-body" id="body-summary">—</div>
+        </div>
+        <div class="tab-content" id="tab-actions">
+          <div class="content-label">Action Items</div>
+          <div class="result-body" id="body-actions">—</div>
+        </div>
+        <div class="tab-content" id="tab-risks">
+          <div class="content-label">Key Risks</div>
+          <div class="result-body" id="body-risks">—</div>
+        </div>
+
+        <div class="results-footer">
+          <span style="font-size:12px;color:var(--text-faint);">Generated with Gemini 2.0 Flash</span>
+          <div class="spacer"></div>
+          <button class="btn-secondary" id="new-analysis-btn">
+            <i data-lucide="plus" style="width:14px;height:14px"></i> New analysis
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /results-step -->
+
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    // ── State ────────────────────────────────────────────────────────────────
+    let currentUser  = null;
+    let selectedFile = null;
+    let selectedMode = 'summary';
+    let resultData   = null;
+    let progressTimer = null;
+    const FREE_LIMIT = 3;
+
+    // ── Elements ─────────────────────────────────────────────────────────────
+    const authLoading  = document.getElementById('auth-loading');
+    const navRight     = document.getElementById('nav-right');
+    const navEmail     = document.getElementById('nav-email');
+    const docCounter   = document.getElementById('doc-counter');
+    const badgePro     = document.getElementById('badge-pro');
+    const btnUpgrade   = document.getElementById('btn-upgrade');
+    const limitHint    = document.getElementById('limit-hint');
+
+    const uploadStep     = document.getElementById('upload-step');
+    const processingStep = document.getElementById('processing-step');
+    const resultsStep    = document.getElementById('results-step');
+
+    const dropZone  = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const fileChip  = document.getElementById('file-chip');
+    const chipName  = document.getElementById('chip-name');
+    const chipSize  = document.getElementById('chip-size');
+    const removeFile = document.getElementById('remove-file');
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const uploadError    = document.getElementById('upload-error');
+    const uploadErrorTxt = document.getElementById('upload-error-text');
+
+    const progItems = [document.getElementById('p1'), document.getElementById('p2'),
+                       document.getElementById('p3'), document.getElementById('p4')];
+
+    const resFilename = document.getElementById('res-filename');
+    const resMode     = document.getElementById('res-mode');
+    const resTime     = document.getElementById('res-time');
+    const resTimeRow  = document.getElementById('res-time-row');
+
+    const bodySummary = document.getElementById('body-summary');
+    const bodyActions = document.getElementById('body-actions');
+    const bodyRisks   = document.getElementById('body-risks');
+
+    // ── Steps visual ─────────────────────────────────────────────────────────
+    function setStep(n) {
+      [1, 2, 3].forEach(i => {
+        const el  = document.getElementById(`s${i}`);
+        const num = document.getElementById(`s${i}-num`);
+        el.classList.remove('active', 'done');
+        if (i === n)    el.classList.add('active');
+        if (i < n)      el.classList.add('done');
+        num.textContent = i < n ? '✓' : i;
+      });
+
+      uploadStep.classList.toggle('hidden', n !== 1);
+      processingStep.classList.toggle('hidden', n !== 2);
+      resultsStep.classList.toggle('visible', n === 3);
+      if (n !== 3) resultsStep.classList.remove('visible');
+    }
+
+    // ── Auth check ────────────────────────────────────────────────────────────
+    async function checkAuth() {
+      try {
+        const res  = await fetch('/api/auth/me');
+        const data = await res.json();
+        if (!data.user) { window.location.href = '/login.html'; return; }
+        currentUser = data.user;
+        renderNav();
+      } catch {
+        window.location.href = '/login.html';
+      } finally {
+        authLoading.style.display = 'none';
+        navRight.style.display    = 'flex';
+      }
+    }
+
+    function renderNav() {
+      const u = currentUser;
+      navEmail.textContent = u.email;
+      if (u.plan === 'pro') {
+        badgePro.classList.remove('hidden');
+      } else {
+        const left = FREE_LIMIT - (u.docs_used || 0);
+        docCounter.textContent = `${left} of ${FREE_LIMIT} free docs left`;
+        docCounter.classList.toggle('warning', left === 0);
+        docCounter.classList.remove('hidden');
+        btnUpgrade.classList.remove('hidden');
+      }
+      updateLimitHint();
+    }
+
+    function updateLimitHint() {
+      if (!currentUser) return;
+      if (currentUser.plan === 'pro') {
+        limitHint.innerHTML = 'Powered by Gemini 2.0 Flash';
+        return;
+      }
+      const left = FREE_LIMIT - (currentUser.docs_used || 0);
+      if (left <= 0) {
+        limitHint.innerHTML = `You've used all free docs — <a onclick="alert('Upgrade coming soon!')">upgrade to continue</a>`;
+        analyzeBtn.disabled = true;
+      }
+    }
+
+    function canProcess() {
+      if (!currentUser) return false;
+      if (currentUser.plan === 'pro') return true;
+      return (currentUser.docs_used || 0) < FREE_LIMIT;
+    }
+
+    // ── Sign out ──────────────────────────────────────────────────────────────
+    document.getElementById('btn-signout').addEventListener('click', async () => {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.href = '/login.html';
+    });
+
+    // ── File handling ─────────────────────────────────────────────────────────
+    function formatBytes(b) {
+      return b > 1024 * 1024
+        ? (b / (1024 * 1024)).toFixed(1) + ' MB'
+        : (b / 1024).toFixed(0) + ' KB';
+    }
+
+    function setFile(f) {
+      if (!f) return;
+      if (f.type !== 'application/pdf' && !f.name.toLowerCase().endsWith('.pdf')) {
+        showUploadError('Only PDF files are supported.'); return;
+      }
+      if (f.size > 20 * 1024 * 1024) {
+        showUploadError('File must be under 20 MB.'); return;
+      }
+      hideUploadError();
+      selectedFile = f;
+      chipName.textContent = f.name;
+      chipSize.textContent = formatBytes(f.size);
+      fileChip.classList.add('visible');
+      dropZone.style.display = 'none';
+      analyzeBtn.disabled = !canProcess();
+    }
+
+    function clearFile() {
+      selectedFile = null;
+      fileInput.value = '';
+      fileChip.classList.remove('visible');
+      dropZone.style.display = '';
+      analyzeBtn.disabled = true;
+      hideUploadError();
+    }
+
+    function showUploadError(msg) {
+      uploadErrorTxt.textContent = msg;
+      uploadError.classList.add('visible');
+    }
+    function hideUploadError() { uploadError.classList.remove('visible'); }
+
+    fileInput.addEventListener('change', (e) => setFile(e.target.files?.[0] ?? null));
+    removeFile.addEventListener('click', clearFile);
+
+    dropZone.addEventListener('dragover',  (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', ()  => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      setFile(e.dataTransfer.files[0] ?? null);
+    });
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    // ── Mode selector ─────────────────────────────────────────────────────────
+    document.querySelectorAll('.mode-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        selectedMode = card.dataset.mode;
+      });
+    });
+
+    // ── Analyze ───────────────────────────────────────────────────────────────
+    analyzeBtn.addEventListener('click', async () => {
+      if (!selectedFile || !canProcess()) return;
+      hideUploadError();
+      setStep(2);
+      startProgress();
+
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('mode', selectedMode);
+
+      try {
+        const res  = await fetch('/api/process', { method: 'POST', body: formData });
+        const data = await res.json();
+        clearProgress();
+
+        if (!res.ok) {
+          setStep(1);
+          showUploadError(data.error || 'Processing failed — please try again.');
+          return;
+        }
+
+        resultData = data.result;
+        showResults();
+
+        // Refresh user counters
+        fetch('/api/auth/me').then(r => r.json()).then(d => {
+          if (d.user) { currentUser = d.user; renderNav(); }
+        });
+
+      } catch {
+        clearProgress();
+        setStep(1);
+        showUploadError('Connection error — please try again.');
+      }
+    });
+
+    // ── Progress animation ────────────────────────────────────────────────────
+    let progIdx = 0;
+    function startProgress() {
+      progIdx = 0;
+      progItems.forEach(el => { el.classList.remove('active', 'done'); });
+      progItems[0].classList.add('active');
+      progressTimer = setInterval(() => {
+        progItems[progIdx].classList.remove('active');
+        progItems[progIdx].classList.add('done');
+        progIdx = Math.min(progIdx + 1, progItems.length - 1);
+        progItems[progIdx].classList.add('active');
+      }, 1800);
+    }
+    function clearProgress() {
+      clearInterval(progressTimer);
+      progItems.forEach(el => { el.classList.remove('active', 'done'); });
+    }
+
+    // ── Show results ──────────────────────────────────────────────────────────
+    function showResults() {
+      const modeLabel = { summary: 'Summary', actions: 'Action Items', risks: 'Key Risks' };
+
+      resFilename.textContent = selectedFile?.name ?? '—';
+      resMode.textContent     = modeLabel[selectedMode] ?? selectedMode;
+
+      if (resultData?.processingTime != null) {
+        resTime.textContent      = resultData.processingTime + 's';
+        resTimeRow.style.display = 'flex';
+      }
+
+      bodySummary.textContent = resultData?.summary || '(No summary data)';
+      bodyActions.textContent = resultData?.actions || '(No action items)';
+      bodyRisks.textContent   = resultData?.risks   || '(No risk data)';
+
+      // Activate the tab matching the analysis mode
+      switchTab(selectedMode);
+      setStep(3);
+    }
+
+    // ── Tabs ──────────────────────────────────────────────────────────────────
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+    });
+
+    function switchTab(name) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === `tab-${name}`));
+    }
+
+    // ── Copy ──────────────────────────────────────────────────────────────────
+    document.getElementById('copy-btn').addEventListener('click', async () => {
+      if (!resultData) return;
+      const activeTab = document.querySelector('.tab.active')?.dataset.tab ?? 'summary';
+      const text =
+        activeTab === 'summary' ? resultData.summary :
+        activeTab === 'actions' ? resultData.actions :
+        resultData.risks;
+      await navigator.clipboard.writeText(text || '');
+      const btn = document.getElementById('copy-btn');
+      btn.classList.add('copied');
+      btn.innerHTML = '<i data-lucide="check" style="width:12px;height:12px"></i> Copied!';
+      lucide.createIcons();
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = '<i data-lucide="copy" style="width:12px;height:12px"></i> Copy';
+        lucide.createIcons();
+      }, 2200);
+    });
+
+    // ── Export .md ────────────────────────────────────────────────────────────
+    document.getElementById('export-btn').addEventListener('click', () => {
+      if (!resultData) return;
+      const name = selectedFile?.name?.replace(/\.pdf$/i, '') ?? 'analysis';
+      const md = [
+        `# ${selectedFile?.name ?? 'Document'}`,
+        '',
+        '## Summary',
+        resultData.summary ?? '',
+        '',
+        '## Action Items',
+        resultData.actions ?? '',
+        '',
+        '## Key Risks',
+        resultData.risks ?? '',
+      ].join('\n');
+      const blob = new Blob([md], { type: 'text/markdown' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url; a.download = `${name}-analysis.md`; a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // ── Reset ─────────────────────────────────────────────────────────────────
+    function resetToUpload() {
+      clearFile();
+      resultData   = null;
+      selectedMode = 'summary';
+      document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('mode-summary').classList.add('selected');
+      resTimeRow.style.display = 'none';
+      setStep(1);
+    }
+
+    document.getElementById('reset-btn').addEventListener('click', resetToUpload);
+    document.getElementById('new-analysis-btn').addEventListener('click', resetToUpload);
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    checkAuth();
+    setStep(1);
+  </script>
+</body>
+</html>
