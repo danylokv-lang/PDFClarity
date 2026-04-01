@@ -7,9 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "pages:build": "npx @cloudflare/next-on-pages",
-    "pages:dev": "npx @cloudflare/next-on-pages --watch & wrangler pages dev .vercel/output/static --d1=DB --kv=KV --r2=STORAGE",
-    "pages:deploy": "npm run pages:build && wrangler pages deploy .vercel/output/static --project-name=pdfclarify"
+    "pages:build": "npm_config_legacy_peer_deps=true next-on-pages",
+    "pages:dev": "npm_config_legacy_peer_deps=true next-on-pages --watch & wrangler pages dev .vercel/output/static --d1=DB --kv=KV --r2=STORAGE",
+    "pages:deploy": "npm run build && npm run pages:build && wrangler pages deploy .vercel/output/static --project-name=pdfclarify"
   },
   "dependencies": {
     "next": "16.2.2",

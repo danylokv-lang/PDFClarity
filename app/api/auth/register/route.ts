@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@cloudflare/next-on-pages";
-import { generateToken, buildSessionCookie, hashPassword } from "@/lib/session";
+import { generateToken, buildSessionCookie, hashPassword } from "@/lib/auth/session";
 
 export const runtime = "edge";
 

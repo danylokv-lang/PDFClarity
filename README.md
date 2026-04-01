@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PDFClarify
 
-## Getting Started
+PDFClarify is a Cloudflare-hosted PDF analysis app with a static HTML frontend, Next.js API routes, D1 for data, KV for sessions, and R2 for file storage.
 
-First, run the development server:
+## Project Structure
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```text
+app/                 Next.js app shell and API routes
+db/
+	migrations/        Incremental D1 migrations
+	schema.sql         Base schema for a fresh database
+docs/                Setup notes and project context
+lib/
+	auth/              Session and password helpers
+public/              Static website pages served by Pages
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Main URLs
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `/` and `/index.html` - landing page
+- `/login.html` - sign in and registration
+- `/app.html` - authenticated dashboard
+- `/demo.html` - interactive product demo
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Development
 
-## Learn More
+```bash
+npm install
+npm run build
+npm run pages:build
+```
 
-To learn more about Next.js, take a look at the following resources:
+For Cloudflare local preview:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run pages:dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
+```bash
+npm run pages:deploy
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Database
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Create a fresh database with:
+
+```bash
+wrangler d1 execute pdfclarify-db --remote --file=db/schema.sql
+```
+
+Apply the password-auth migration with:
+
+```bash
+wrangler d1 execute pdfclarify-db --remote --file=db/migrations/001_add_password_columns.sql
+```
+
+## Notes
+
+- Cloudflare config lives in `wrangler.toml`
+- Runtime env types live in `env.d.ts`
+- Extra setup details are in `docs/SETUP.md`

@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@cloudflare/next-on-pages";
-import { generateOTP } from "@/lib/session";
+import { generateOTP } from "@/lib/auth/session";
 
 export const runtime = "edge";
 

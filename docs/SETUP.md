@@ -27,6 +27,9 @@ wrangler d1 execute pdfclarify-db --local --file=db/schema.sql
 
 # Production
 wrangler d1 execute pdfclarify-db --remote --file=db/schema.sql
+
+# Password auth migration
+wrangler d1 execute pdfclarify-db --remote --file=db/migrations/001_add_password_columns.sql
 ```
 
 ### Schema (`db/schema.sql`)
@@ -138,6 +141,7 @@ GEMINI_API_KEY=your_key_here
 ```toml
 name = "pdfclarify"
 compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output/static"
 
 # D1 Database
@@ -163,12 +167,16 @@ preview_id = "PASTE_KV_PREVIEW_ID_HERE"
 ## 6. TypeScript Env Types (`env.d.ts`)
 
 ```ts
-interface Env {
-  DB: D1Database;
-  STORAGE: R2Bucket;
-  KV: KVNamespace;
-  GEMINI_API_KEY: string;
+declare global {
+  interface CloudflareEnv {
+    DB: D1Database;
+    STORAGE: R2Bucket;
+    KV: KVNamespace;
+    GEMINI_API_KEY: string;
+  }
 }
+
+export {};
 ```
 
 ---
@@ -187,8 +195,10 @@ npm install -D @cloudflare/next-on-pages
 {
   "scripts": {
     "dev": "next dev",
-    "pages:build": "npx @cloudflare/next-on-pages",
-    "pages:dev": "npx @cloudflare/next-on-pages --watch & wrangler pages dev .vercel/output/static --d1=DB --kv=KV --r2=STORAGE"
+    "build": "next build",
+    "pages:build": "npm_config_legacy_peer_deps=true next-on-pages",
+    "pages:dev": "npm_config_legacy_peer_deps=true next-on-pages --watch & wrangler pages dev .vercel/output/static --d1=DB --kv=KV --r2=STORAGE",
+    "pages:deploy": "npm run build && npm run pages:build && wrangler pages deploy .vercel/output/static --project-name=pdfclarify"
   }
 }
 ```
@@ -212,7 +222,7 @@ if (process.env.NODE_ENV === 'development') {
 1. Push repo to GitHub
 2. Cloudflare Dashboard → **Pages → Create project** → connect repo
 3. Build settings:
-   - Build command: `npm run pages:build`
+  - Build command: `npm run build && npm run pages:build`
    - Output directory: `.vercel/output/static`
 4. Add bindings in **Settings → Functions**:
    - D1: `DB` → `pdfclarify-db`

@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@cloudflare/next-on-pages";
-import { getSessionToken, clearSessionCookie } from "@/lib/session";
+import { getSessionToken, clearSessionCookie } from "@/lib/auth/session";
 
 export const runtime = "edge";
 
