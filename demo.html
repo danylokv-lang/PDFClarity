@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDFClarify — Interactive Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:            #F5F3F0;
+      --surface:       #FFFFFF;
+      --surface-muted: #F0EEEA;
+      --primary:       #145DA0;
+      --primary-hover: #0F4C81;
+      --text-main:     #111827;
+      --text-muted:    #6B7280;
+      --border:        rgba(15, 23, 42, 0.08);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo {
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-badge {
+      font-size: 11px;
+      background: var(--surface-muted);
+      color: var(--text-muted);
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-weight: 500;
+    }
+
+    /* ── Layout ─────────────────────────────────────── */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 24px 64px;
+      max-width: 920px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* ── Step Indicator ─────────────────────────────── */
+    .steps {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 36px;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+    .step-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--surface-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      transition: background 0.2s, color 0.2s;
+    }
+    .step.active { color: var(--text-main); }
+    .step.active .step-num { background: var(--primary); color: #fff; }
+    .step.done { color: var(--text-muted); }
+    .step.done .step-num { background: #22c55e; color: #fff; }
+    .step-divider { width: 32px; height: 1px; background: var(--border); }
+
+    /* ── Shared helpers ─────────────────────────────── */
+    .hidden { display: none !important; }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 11px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-secondary:hover { background: var(--surface-muted); }
+
+    /* ── Upload Step ────────────────────────────────── */
+    #upload-step { width: 100%; }
+
+    .upload-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px;
+      width: 100%;
+    }
+
+    .drop-zone {
+      border: 2px dashed rgba(20, 93, 160, 0.22);
+      border-radius: 12px;
+      padding: 48px 24px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: rgba(20, 93, 160, 0.02);
+      text-align: center;
+      position: relative;
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: var(--primary);
+      background: rgba(20, 93, 160, 0.04);
+    }
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .drop-icon {
+      width: 48px;
+      height: 48px;
+      background: rgba(20, 93, 160, 0.08);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      color: var(--primary);
+    }
+    .drop-zone h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .drop-zone p { font-size: 14px; color: var(--text-muted); }
+    .drop-zone p span { color: var(--primary); font-weight: 500; cursor: pointer; }
+    .file-limit { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+
+    /* File selected chip */
+    .file-chip {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: rgba(20, 93, 160, 0.05);
+      border: 1.5px solid rgba(20, 93, 160, 0.18);
+      border-radius: 10px;
+      margin-top: 16px;
+    }
+    .file-chip.visible { display: flex; }
+    .file-chip-icon {
+      width: 36px;
+      height: 36px;
+      background: rgba(20, 93, 160, 0.1);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+    .file-chip-info { flex: 1; }
+    .file-chip-info strong { font-size: 13px; font-weight: 600; display: block; }
+    .file-chip-info span { font-size: 12px; color: var(--text-muted); }
+    .file-chip-remove {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 4px;
+      border-radius: 4px;
+      transition: color 0.15s;
+    }
+    .file-chip-remove:hover { color: #dc2626; }
+
+    /* Mode selector */
+    .mode-section { margin-top: 28px; }
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    .modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+    .mode-card {
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      background: var(--surface);
+    }
+    .mode-card:hover { border-color: rgba(20, 93, 160, 0.3); background: rgba(20, 93, 160, 0.02); }
+    .mode-card.selected { border-color: var(--primary); background: rgba(20, 93, 160, 0.04); }
+    .mode-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+    .mode-card h5 { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+    .mode-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+    .actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 24px;
+    }
+    .demo-hint { font-size: 12px; color: var(--text-muted); }
+    .demo-hint button {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      text-decoration: underline;
+    }
+
+    /* ── Processing Step ────────────────────────────── */
+    #processing-step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 56px 40px;
+      width: 100%;
+      text-align: center;
+    }
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 3px solid var(--surface-muted);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #processing-step h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+    #processing-step > p { color: var(--text-muted); font-size: 14px; margin-bottom: 36px; }
+
+    .progress-steps {
+      text-align: left;
+      display: inline-flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .prog-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 0;
+      font-size: 13px;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+    .prog-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .prog-item.active { color: var(--primary); font-weight: 500; }
+    .prog-item.active .prog-dot { background: var(--primary); animation: pulse 1s ease-in-out infinite; }
+    .prog-item.done { color: var(--text-main); }
+    .prog-item.done .prog-dot { background: #22c55e; }
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.75); } }
+
+    /* ── Results Step ───────────────────────────────── */
+    #results-step {
+      display: none;
+      grid-template-columns: 220px 1fr;
+      gap: 20px;
+      width: 100%;
+    }
+    #results-step.visible { display: grid; }
+
+    /* PDF sidebar */
+    .pdf-sidebar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      height: fit-content;
+    }
+    .pdf-thumb {
+      background: var(--surface-muted);
+      border-radius: 10px;
+      aspect-ratio: 3/4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      color: var(--primary);
+      position: relative;
+      overflow: hidden;
+    }
+    .pdf-thumb::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: var(--primary);
+    }
+    .pdf-thumb svg { width: 32px; height: 32px; margin-bottom: 6px; }
+    .pdf-thumb span {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+    .pdf-filename {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      word-break: break-all;
+      line-height: 1.4;
+    }
+    .pdf-meta { display: flex; flex-direction: column; gap: 4px; }
+    .pdf-meta-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .pdf-meta-row span:last-child { color: var(--text-main); font-weight: 500; }
+    .pdf-meta-row span.primary { color: var(--primary); }
+
+    .btn-reset {
+      margin-top: 16px;
+      width: 100%;
+      background: var(--surface-muted);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.15s, color 0.15s;
+    }
+    .btn-reset:hover { background: var(--bg); color: var(--text-main); }
+
+    /* Results panel */
+    .results-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .results-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .tabs { display: flex; gap: 2px; }
+    .tab {
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 7px;
+      transition: background 0.15s, color 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tab:hover { color: var(--text-main); }
+    .tab.active { background: rgba(20, 93, 160, 0.08); color: var(--primary); }
+
+    .copy-btn {
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 7px 14px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .copy-btn:hover { background: var(--bg); color: var(--text-main); }
+    .copy-btn.copied { color: #16a34a; border-color: #16a34a; background: rgba(22, 163, 74, 0.05); }
+
+    /* Tab content */
+    .tab-content { padding: 24px; display: none; animation: fadeUp 0.2s ease; }
+    .tab-content.active { display: block; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    .content-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .summary-body { font-size: 14px; line-height: 1.8; color: var(--text-main); }
+    .summary-body p { margin-bottom: 16px; }
+    .summary-body p:last-child { margin-bottom: 0; }
+
+    .action-list { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+    .action-list li { display: flex; gap: 10px; font-size: 13.5px; line-height: 1.6; align-items: flex-start; }
+    .action-num {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      background: rgba(20, 93, 160, 0.1);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .risk-list { display: flex; flex-direction: column; gap: 10px; }
+    .risk-item {
+      background: var(--surface-muted);
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .risk-badge {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 100px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .risk-badge.high { background: rgba(239, 68, 68, 0.1); color: #dc2626; }
+    .risk-badge.medium { background: rgba(234, 179, 8, 0.1); color: #b45309; }
+    .risk-body { font-size: 13px; line-height: 1.6; }
+    .risk-body strong { display: block; font-weight: 600; margin-bottom: 3px; font-size: 13.5px; }
+
+    /* Footer */
+    .results-footer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      background: var(--surface-muted);
+      display: flex;
+      gap: 10px;
+      flex-shrink: 0;
+      align-items: center;
+    }
+    .results-footer .spacer { flex: 1; }
+    .btn-done {
+      background: #16a34a;
+      color: #fff;
+      border: none;
+      padding: 9px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: background 0.15s;
+    }
+    .btn-done:hover { background: #15803d; }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .modes { grid-template-columns: 1fr; }
+      #results-step { grid-template-columns: 1fr; }
+      .pdf-sidebar { display: none; }
+      main { padding: 32px 16px 48px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <i data-lucide="file-text"></i>
+      PDFClarify
+    </div>
+  </header>
+
+  <main>
+
+    <!-- Step indicator -->
+    <div class="steps">
+      <div class="step active" id="s1"><div class="step-num">1</div>Upload</div>
+      <div class="step-divider"></div>
+      <div class="step" id="s2"><div class="step-num">2</div>Process</div>
+      <div class="step-divider"></div>
+      <div class="step" id="s3"><div class="step-num">3</div>Results</div>
+    </div>
+
+    <!-- ── Step 1: Upload ─────────────────────────── -->
+    <div id="upload-step">
+      <div class="upload-card">
+
+        <div class="drop-zone" id="drop-zone">
+          <input type="file" accept=".pdf" id="file-input">
+          <div class="drop-icon"><i data-lucide="upload-cloud" style="width:22px;height:22px"></i></div>
+          <h3>Drop your PDF here</h3>
+          <p>or <span>browse from your computer</span></p>
+          <p class="file-limit">Max 30 MB · Up to 50 pages (free tier)</p>
+        </div>
+
+        <div class="file-chip" id="file-chip">
+          <div class="file-chip-icon"><i data-lucide="file-text" style="width:18px;height:18px"></i></div>
+          <div class="file-chip-info">
+            <strong id="chip-name">document.pdf</strong>
+            <span id="chip-size">—</span>
+          </div>
+          <button class="file-chip-remove" id="remove-file" title="Remove file">
+            <i data-lucide="x" style="width:15px;height:15px"></i>
+          </button>
+        </div>
+
+        <div class="mode-section">
+          <div class="section-title">Analysis Mode</div>
+          <div class="modes">
+            <div class="mode-card selected" data-mode="summary">
+              <div class="mode-icon" style="background:rgba(20,93,160,0.1);color:var(--primary)">
+                <i data-lucide="highlighter" style="width:16px;height:16px"></i>
+              </div>
+              <h5>Summary</h5>
+              <p>Executive overview of key points</p>
+            </div>
+            <div class="mode-card" data-mode="actions">
+              <div class="mode-icon" style="background:rgba(3, 110, 42, 0.156);color:var(--primary)">
+                <i data-lucide="list-todo" style="width:16px;height:16px"></i>
+              </div>
+              <h5>Action Items</h5>
+              <p>What needs to be done and by whom</p>
+            </div>
+            <div class="mode-card" data-mode="risks">
+              <div class="mode-icon" style="background:rgba(239,68,68,0.1);color:#dc2626">
+                <i data-lucide="alert-triangle" style="width:16px;height:16px"></i>
+              </div>
+              <h5>Key Risks</h5>
+              <p>Decisions and potential blockers</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions-row">
+          <p class="demo-hint">No PDF? <button id="try-demo">Use sample document</button></p>
+          <button class="btn-primary" id="analyze-btn" disabled>
+            <i data-lucide="sparkles" style="width:15px;height:15px"></i>
+            Analyze PDF
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Step 2: Processing ─────────────────────── -->
+    <div id="processing-step" class="hidden">
+      <div class="spinner"></div>
+      <h3>Analyzing your PDF…</h3>
+      <p>This usually takes 5–15 seconds</p>
+      <div class="progress-steps">
+        <div class="prog-item active" id="p1"><div class="prog-dot"></div>Extracting text from PDF</div>
+        <div class="prog-item" id="p2"><div class="prog-dot"></div>Chunking content</div>
+        <div class="prog-item" id="p3"><div class="prog-dot"></div>Running LLM analysis</div>
+        <div class="prog-item" id="p4"><div class="prog-dot"></div>Structuring results</div>
+      </div>
+    </div>
+
+    <!-- ── Step 3: Results ───────────────────────── -->
+    <div id="results-step">
+
+      <!-- Sidebar -->
+      <div class="pdf-sidebar">
+        <div class="pdf-thumb">
+          <i data-lucide="file-text"></i>
+          <span>PDF</span>
+        </div>
+        <div class="pdf-filename" id="res-filename">Q4_Strategy_Report.pdf</div>
+        <div class="pdf-meta">
+          <div class="pdf-meta-row"><span>Pages</span><span id="res-pages">14</span></div>
+          <div class="pdf-meta-row"><span>Size</span><span id="res-size">2.4 MB</span></div>
+          <div class="pdf-meta-row"><span>Mode</span><span id="res-mode" class="primary">Summary</span></div>
+        </div>
+        <button class="btn-reset" id="reset-btn">← Analyze another PDF</button>
+      </div>
+
+      <!-- Results panel -->
+      <div class="results-panel">
+        <div class="results-header">
+          <div class="tabs">
+            <div class="tab active" data-tab="summary">
+              <i data-lucide="highlighter" style="width:13px;height:13px"></i>Summary
+            </div>
+            <div class="tab" data-tab="actions">
+              <i data-lucide="list-todo" style="width:13px;height:13px"></i>Actions
+            </div>
+            <div class="tab" data-tab="risks">
+              <i data-lucide="alert-triangle" style="width:13px;height:13px"></i>Risks
+            </div>
+          </div>
+          <button class="copy-btn" id="copy-btn">
+            <i data-lucide="copy" style="width:12px;height:12px"></i>Copy as Markdown
+          </button>
+        </div>
+
+        <!-- Summary -->
+        <div class="tab-content active" id="tab-summary">
+          <div class="content-label">Executive Summary</div>
+          <div class="summary-body">
+            <p>The Q4 Strategy Report outlines the company's expansion into three new European markets — Germany, France, and Poland — with a projected investment of <strong>€4.2M</strong> over two fiscal years. Revenue growth targets have been revised upward to <strong>34% YoY</strong>, underpinned by the successful Series B close and the integration of the Klara AI acquisition.</p>
+            <p>The product roadmap prioritizes mobile-first UX improvements and API monetization, with enterprise tier launches scheduled for <strong>Q2 2026</strong>. The report recommends a restructured engineering org with two new pods focused exclusively on platform stability and compliance.</p>
+            <p>Operational efficiency gains from the recent AWS migration are projected to reduce infra costs by <strong>18% annually</strong>, partially offsetting headcount costs from the planned hiring of 12 senior engineers and 4 PMs.</p>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="tab-content" id="tab-actions">
+          <div class="content-label">Action Items · 6 items</div>
+          <ul class="action-list">
+            <li><div class="action-num">1</div><span>Finalize localization contracts for Germany and France by <strong>April 15</strong> — Legal + VP Sales</span></li>
+            <li><div class="action-num">2</div><span>Complete Klara AI codebase audit and submit integration timeline to CTO by <strong>April 22</strong></span></li>
+            <li><div class="action-num">3</div><span>Define enterprise tier pricing model and submit for board approval — Product & Finance</span></li>
+            <li><div class="action-num">4</div><span>Open 12 engineering JDs and begin agency sourcing by <strong>May 1</strong> — Talent team</span></li>
+            <li><div class="action-num">5</div><span>Schedule GDPR compliance review with external counsel for new EU markets</span></li>
+            <li><div class="action-num">6</div><span>Present revised Q1 actuals vs. forecast to board — CFO deck due <strong>April 10</strong></span></li>
+          </ul>
+        </div>
+
+        <!-- Risks -->
+        <div class="tab-content" id="tab-risks">
+          <div class="content-label">Key Risks · 4 identified</div>
+          <div class="risk-list">
+            <div class="risk-item">
+              <span class="risk-badge high">High</span>
+              <div class="risk-body">
+                <strong>GDPR compliance gap in EU expansion</strong>
+                Legal review for Germany/France has not been completed. Launching without sign-off could delay market entry by 2–3 months or trigger regulatory action.
+              </div>
+            </div>
+            <div class="risk-item">
+              <span class="risk-badge high">High</span>
+              <div class="risk-body">
+                <strong>Klara AI integration timeline underestimated</strong>
+                Engineering estimates suggest 6-month integration vs. the 3-month strategy assumption, putting the Q2 enterprise launch at risk.
+              </div>
+            </div>
+            <div class="risk-item">
+              <span class="risk-badge medium">Medium</span>
+              <div class="risk-body">
+                <strong>Talent acquisition in a competitive market</strong>
+                Hiring 12 senior engineers within 60 days may not be achievable, impacting the Q3 roadmap delivery.
+              </div>
+            </div>
+            <div class="risk-item">
+              <span class="risk-badge medium">Medium</span>
+              <div class="risk-body">
+                <strong>FX exposure on €4.2M investment</strong>
+                EUR/USD variance over 2 years could materially affect budget. No hedging strategy is currently defined.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="results-footer">
+          <button class="btn-secondary" id="export-btn">
+            <i data-lucide="download" style="width:14px;height:14px"></i>Export .md
+          </button>
+          <button class="btn-secondary">
+            <i data-lucide="bookmark" style="width:14px;height:14px"></i>Save to History
+          </button>
+          <div class="spacer"></div>
+          <button class="btn-done" id="done-btn">
+            <i data-lucide="check" style="width:14px;height:14px"></i>Done
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /results-step -->
+
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    // ── State ────────────────────────────────────────
+    let selectedFile = null;
+    let selectedMode = 'summary';
+
+    // ── DOM refs ─────────────────────────────────────
+    const dropZone   = document.getElementById('drop-zone');
+    const fileInput  = document.getElementById('file-input');
+    const fileChip   = document.getElementById('file-chip');
+    const chipName   = document.getElementById('chip-name');
+    const chipSize   = document.getElementById('chip-size');
+    const removeBtn  = document.getElementById('remove-file');
+    const analyzeBtn = document.getElementById('analyze-btn');
+
+    const uploadStep     = document.getElementById('upload-step');
+    const processingStep = document.getElementById('processing-step');
+    const resultsStep    = document.getElementById('results-step');
+
+    const steps = [
+      document.getElementById('s1'),
+      document.getElementById('s2'),
+      document.getElementById('s3'),
+    ];
+
+    // ── Step indicator ───────────────────────────────
+    function setStep(n) {
+      steps.forEach((el, i) => {
+        el.classList.remove('active', 'done');
+        if (i + 1 === n) el.classList.add('active');
+        if (i + 1 < n)  el.classList.add('done');
+      });
+    }
+
+    // ── File handling ────────────────────────────────
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      const f = e.dataTransfer.files[0];
+      if (f && f.type === 'application/pdf') setFile(f);
+    });
+    fileInput.addEventListener('change', e => { if (e.target.files[0]) setFile(e.target.files[0]); });
+
+    function setFile(f) {
+      selectedFile = f;
+      chipName.textContent = f.name;
+      chipSize.textContent = fmtSize(f.size);
+      fileChip.classList.add('visible');
+      analyzeBtn.disabled = false;
+      lucide.createIcons();
+    }
+
+    function fmtSize(b) {
+      return b < 1024 * 1024 ? (b / 1024).toFixed(1) + ' KB' : (b / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    removeBtn.addEventListener('click', () => {
+      selectedFile = null;
+      fileChip.classList.remove('visible');
+      analyzeBtn.disabled = true;
+      fileInput.value = '';
+    });
+
+    // ── Mode selection ───────────────────────────────
+    document.querySelectorAll('.mode-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        selectedMode = card.dataset.mode;
+      });
+    });
+
+    // ── Demo shortcut ────────────────────────────────
+    document.getElementById('try-demo').addEventListener('click', () => {
+      setFile({ name: 'Q4_Strategy_Report.pdf', size: 2516582 });
+    });
+
+    // ── Start analysis ───────────────────────────────
+    analyzeBtn.addEventListener('click', startProcessing);
+
+    function startProcessing() {
+      uploadStep.classList.add('hidden');
+      processingStep.classList.remove('hidden');
+      setStep(2);
+
+      const progs = ['p1', 'p2', 'p3', 'p4'];
+      const delays = [0, 1100, 2400, 3600];
+
+      progs.forEach((id, i) => {
+        setTimeout(() => {
+          document.getElementById(id).classList.add('active');
+          if (i > 0) {
+            document.getElementById(progs[i - 1]).classList.remove('active');
+            document.getElementById(progs[i - 1]).classList.add('done');
+          }
+        }, delays[i]);
+      });
+
+      setTimeout(() => {
+        document.getElementById('p4').classList.remove('active');
+        document.getElementById('p4').classList.add('done');
+        showResults();
+      }, 5000);
+    }
+
+    function showResults() {
+      processingStep.classList.add('hidden');
+
+      if (selectedFile) {
+        document.getElementById('res-filename').textContent = selectedFile.name;
+        document.getElementById('res-size').textContent = fmtSize(selectedFile.size);
+      }
+      const modeLabel = { summary: 'Summary', actions: 'Action Items', risks: 'Key Risks' };
+      document.getElementById('res-mode').textContent = modeLabel[selectedMode] || 'Summary';
+      document.getElementById('res-pages').textContent = Math.floor(Math.random() * 18) + 6;
+
+      const startTab = selectedMode === 'actions' ? 'actions' : selectedMode === 'risks' ? 'risks' : 'summary';
+      showTab(startTab);
+
+      resultsStep.classList.add('visible');
+      setStep(3);
+      lucide.createIcons();
+    }
+
+    // ── Tab switching ────────────────────────────────
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => showTab(tab.dataset.tab));
+    });
+
+    function showTab(id) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      const t = document.querySelector(`.tab[data-tab="${id}"]`);
+      const c = document.getElementById(`tab-${id}`);
+      if (t) t.classList.add('active');
+      if (c) c.classList.add('active');
+    }
+
+    // ── Copy as Markdown ─────────────────────────────
+    const MD = {
+      summary: `# Executive Summary\n\nThe Q4 Strategy Report outlines the company's expansion into three new European markets — Germany, France, and Poland — with a projected investment of **€4.2M** over two fiscal years. Revenue growth targets have been revised upward to **34% YoY**, underpinned by the successful Series B close and the integration of the Klara AI acquisition.\n\nThe product roadmap prioritizes mobile-first UX improvements and API monetization, with enterprise tier launches scheduled for **Q2 2026**. The report recommends a restructured engineering org with two new pods focused exclusively on platform stability and compliance.\n\nOperational efficiency gains from the recent AWS migration are projected to reduce infra costs by **18% annually**, partially offsetting headcount costs from the planned hiring of 12 senior engineers and 4 PMs.`,
+
+      actions: `# Action Items\n\n1. Finalize localization contracts for Germany and France by **April 15** — Legal + VP Sales\n2. Complete Klara AI codebase audit and submit integration timeline to CTO by **April 22**\n3. Define enterprise tier pricing model and submit for board approval — Product & Finance\n4. Open 12 engineering JDs and begin agency sourcing by **May 1** — Talent team\n5. Schedule GDPR compliance review with external counsel for new EU markets\n6. Present revised Q1 actuals vs. forecast to board — CFO deck due **April 10**`,
+
+      risks: `# Key Risks\n\n### 🔴 High\n\n**GDPR compliance gap in EU expansion** — Legal review for Germany/France has not been completed. Launching without sign-off could delay market entry by 2–3 months.\n\n**Klara AI integration timeline underestimated** — Engineering estimates suggest 6-month integration vs. the 3-month strategy assumption, putting the Q2 enterprise launch at risk.\n\n### 🟡 Medium\n\n**Talent acquisition in a competitive market** — Hiring 12 senior engineers within 60 days may not be achievable, impacting the Q3 roadmap delivery.\n\n**FX exposure on €4.2M investment** — EUR/USD variance over 2 years could materially affect budget. No hedging strategy is currently defined.`,
+    };
+
+    document.getElementById('copy-btn').addEventListener('click', () => {
+      const activeTab = document.querySelector('.tab.active')?.dataset.tab || 'summary';
+      const text = MD[activeTab] || MD.summary;
+      const btn = document.getElementById('copy-btn');
+
+      // Clipboard API with fallback
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => flashCopied(btn));
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        flashCopied(btn);
+      }
+    });
+
+    function flashCopied(btn) {
+      btn.classList.add('copied');
+      btn.innerHTML = '<i data-lucide="check" style="width:12px;height:12px"></i>Copied!';
+      lucide.createIcons();
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = '<i data-lucide="copy" style="width:12px;height:12px"></i>Copy as Markdown';
+        lucide.createIcons();
+      }, 2000);
+    }
+
+    // ── Export .md ───────────────────────────────────
+    document.getElementById('export-btn').addEventListener('click', () => {
+      const activeTab = document.querySelector('.tab.active')?.dataset.tab || 'summary';
+      const text = MD[activeTab] || MD.summary;
+      const base = (selectedFile?.name?.replace(/\.pdf$/i, '') || 'document');
+      const filename = `${base}-${activeTab}.md`;
+      const blob = new Blob([text], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // ── Reset ────────────────────────────────────────
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      resultsStep.classList.remove('visible');
+      processingStep.classList.add('hidden');
+      uploadStep.classList.remove('hidden');
+
+      ['p1','p2','p3','p4'].forEach(id => {
+        const el = document.getElementById(id);
+        el.classList.remove('active','done');
+      });
+      document.getElementById('p1').classList.add('active');
+
+      setStep(1);
+    });
+
+    // ── Done → Dashboard (future) ────────────────────
+    document.getElementById('done-btn').addEventListener('click', () => {
+      // TODO: replace with router.push('/dashboard') once app is built
+      window.location.href = '/dashboard';
+    });
+  </script>
+</body>
+</html>

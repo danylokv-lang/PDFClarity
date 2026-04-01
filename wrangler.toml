@@ -1,0 +1,16 @@
+name = "pdfclarify"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = ".vercel/output/static"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "pdfclarify-db"
+database_id = "49efbcda-0959-421b-ac0e-e4c99d84cfb2"
+
+[[r2_buckets]]
+binding = "STORAGE"
+bucket_name = "pdfclarify-pdfs"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "670c60f1eefe49baa1852dc3ad8ab2d2"

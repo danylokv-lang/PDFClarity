@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDFClarify — Turn PDFs into clear insights instantly</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:            #F5F3F0;
+      --surface:       #FFFFFF;
+      --surface-muted: #F0EEEA;
+      --primary:       #145DA0;
+      --primary-hover: #0F4C81;
+      --text-main:     #111827;
+      --text-muted:    #6B7280;
+      --border:        rgba(15, 23, 42, 0.08);
+      --section-gap:   96px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+    }
+
+    /* ─────────────────────────────────────────────────
+       HEADER / NAV
+    ───────────────────────────────────────────────── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+    }
+    .logo {
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    nav { display: flex; align-items: center; gap: 4px; }
+    .nav-link {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      transition: color 0.15s, background 0.15s;
+    }
+    .nav-link:hover { color: var(--text-main); background: var(--surface-muted); }
+    .nav-actions { display: flex; align-items: center; gap: 10px; }
+    .btn-ghost {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-main);
+      background: none;
+      border: 1px solid var(--border);
+      padding: 8px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.15s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-ghost:hover { background: var(--surface-muted); }
+    .btn-primary {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      background: var(--primary);
+      border: none;
+      padding: 9px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.15s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-primary-lg {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      background: var(--primary);
+      border: none;
+      padding: 14px 32px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.15s, transform 0.1s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary-lg:hover { background: var(--primary-hover); transform: translateY(-1px); }
+
+    /* ─────────────────────────────────────────────────
+       SHARED LAYOUT HELPERS
+    ───────────────────────────────────────────────── */
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 32px;
+      width: 100%;
+    }
+    .section { padding: var(--section-gap) 0; }
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--primary);
+      background: rgba(20, 93, 160, 0.07);
+      padding: 5px 12px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-size: clamp(26px, 3.5vw, 36px);
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin-bottom: 14px;
+    }
+    .section-sub {
+      font-size: 17px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      max-width: 520px;
+    }
+
+    /* ─────────────────────────────────────────────────
+       HERO
+    ───────────────────────────────────────────────── */
+    .hero {
+      padding: 80px 0 72px;
+      text-align: center;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary);
+      background: rgba(20, 93, 160, 0.07);
+      border: 1px solid rgba(20, 93, 160, 0.14);
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 28px;
+    }
+    .hero-badge span { color: var(--text-muted); font-weight: 400; }
+    .hero h1 {
+      font-size: clamp(34px, 5.5vw, 58px);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      max-width: 780px;
+      margin: 0 auto 22px;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--primary);
+    }
+    .hero-sub {
+      font-size: 19px;
+      color: var(--text-muted);
+      max-width: 520px;
+      margin: 0 auto 40px;
+      line-height: 1.6;
+    }
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .hero-note {
+      margin-top: 18px;
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+    .hero-note span { display: flex; align-items: center; gap: 5px; }
+
+    /* Hero mock screenshot */
+    .hero-screenshot {
+      margin-top: 64px;
+      max-width: 860px;
+      margin-left: auto;
+      margin-right: auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 24px 80px rgba(15, 23, 42, 0.10), 0 4px 16px rgba(15, 23, 42, 0.06);
+      overflow: hidden;
+    }
+    .screenshot-bar {
+      background: var(--surface-muted);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .screenshot-dots { display: flex; gap: 6px; }
+    .dot { width: 11px; height: 11px; border-radius: 50%; }
+    .dot-r { background: #fc5f57; }
+    .dot-y { background: #fdbc2c; }
+    .dot-g { background: #33c748; }
+    .screenshot-url {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* App mockup inside the hero screenshot */
+    .app-mockup {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      min-height: 360px;
+    }
+    .mock-sidebar {
+      background: var(--surface-muted);
+      border-right: 1px solid var(--border);
+      padding: 20px 14px;
+    }
+    .mock-sidebar-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    .mock-hist-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 9px 10px;
+      border-radius: 8px;
+      margin-bottom: 4px;
+      cursor: default;
+    }
+    .mock-hist-item.active { background: rgba(20, 93, 160, 0.08); }
+    .mock-hist-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: rgba(20, 93, 160, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+    .mock-hist-info strong { display: block; font-size: 12px; font-weight: 600; line-height: 1.3; }
+    .mock-hist-info span { font-size: 11px; color: var(--text-muted); }
+    .mock-content { padding: 20px 24px; }
+    .mock-doc-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .mock-doc-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(20, 93, 160, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+    }
+    .mock-doc-title { font-size: 15px; font-weight: 700; }
+    .mock-doc-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .mock-tabs { display: flex; gap: 4px; margin-bottom: 18px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+    .mock-tab {
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      border-radius: 6px;
+      cursor: default;
+    }
+    .mock-tab.active { background: rgba(20, 93, 160, 0.08); color: var(--primary); }
+    .mock-lines { display: flex; flex-direction: column; gap: 8px; }
+    .mock-line {
+      height: 10px;
+      background: var(--surface-muted);
+      border-radius: 4px;
+    }
+    .mock-line.short { width: 55%; }
+    .mock-line.medium { width: 78%; }
+    .mock-line.long { width: 92%; }
+    .mock-bullet-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+    .mock-bullet {
+      display: flex;
+      gap: 9px;
+      align-items: flex-start;
+    }
+    .mock-bullet-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+      margin-top: 3px;
+      flex-shrink: 0;
+      opacity: 0.5;
+    }
+    .mock-bullet-line {
+      height: 10px;
+      background: var(--surface-muted);
+      border-radius: 4px;
+      flex: 1;
+    }
+
+    /* ─────────────────────────────────────────────────
+       HOW IT WORKS
+    ───────────────────────────────────────────────── */
+    .how-it-works { background: var(--bg); }
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 48px;
+    }
+    .how-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 24px;
+      position: relative;
+    }
+    .how-num {
+      position: absolute;
+      top: 22px;
+      right: 22px;
+      font-size: 13px;
+      font-weight: 700;
+      color: rgba(20, 93, 160, 0.18);
+    }
+    .how-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+    .how-card h4 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .how-card p { font-size: 14px; color: var(--text-muted); line-height: 1.65; }
+    .how-connector {
+      position: relative;
+    }
+    .how-connector::after {
+      content: '';
+      position: absolute;
+      top: 50px;
+      right: -14px;
+      width: 28px;
+      height: 2px;
+      background: var(--border);
+      z-index: 1;
+    }
+
+    /* ─────────────────────────────────────────────────
+       FEATURES / SCREENSHOTS (alternating)
+    ───────────────────────────────────────────────── */
+    .features { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .feature-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+      padding: 64px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .feature-row:last-child { border-bottom: none; }
+    .feature-row.reverse { direction: rtl; }
+    .feature-row.reverse > * { direction: ltr; }
+
+    .feature-text {}
+    .feature-text h3 {
+      font-size: clamp(22px, 2.8vw, 28px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      margin-bottom: 14px;
+    }
+    .feature-text p {
+      font-size: 16px;
+      color: var(--text-muted);
+      line-height: 1.75;
+      margin-bottom: 24px;
+    }
+    .feature-checklist { display: flex; flex-direction: column; gap: 10px; }
+    .feature-check {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .check-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(22, 163, 74, 0.12);
+      color: #16a34a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* Screenshot mockup cards */
+    .screenshot-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 12px 48px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(15, 23, 42, 0.04);
+      overflow: hidden;
+    }
+    .sc-bar {
+      background: var(--surface-muted);
+      border-bottom: 1px solid var(--border);
+      padding: 9px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sc-dots { display: flex; gap: 5px; }
+    .sc-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .sc-body { padding: 20px; }
+
+    /* Screenshot 1 — Upload mode */
+    .sc1-drop {
+      border: 2px dashed rgba(20, 93, 160, 0.22);
+      border-radius: 10px;
+      padding: 28px 16px;
+      text-align: center;
+      background: rgba(20, 93, 160, 0.02);
+      margin-bottom: 14px;
+    }
+    .sc1-drop-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: rgba(20, 93, 160, 0.1);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 10px;
+      color: var(--primary);
+    }
+    .sc1-label { font-size: 12px; font-weight: 600; margin-bottom: 3px; }
+    .sc1-sub { font-size: 11px; color: var(--text-muted); }
+    .sc1-modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .sc1-mode {
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      cursor: default;
+    }
+    .sc1-mode.sel { border-color: var(--primary); background: rgba(20, 93, 160, 0.04); }
+    .sc1-mode-icon { width: 22px; height: 22px; border-radius: 5px; background: rgba(20, 93, 160, 0.1); margin-bottom: 6px; display: flex; align-items: center; justify-content: center; color: var(--primary); }
+    .sc1-mode-title { font-size: 11px; font-weight: 600; }
+    .sc1-mode-sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Screenshot 2 — Results panel */
+    .sc2-tabs { display: flex; gap: 4px; margin-bottom: 14px; }
+    .sc2-tab {
+      padding: 5px 10px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      border-radius: 5px;
+      cursor: default;
+    }
+    .sc2-tab.active { background: rgba(20, 93, 160, 0.08); color: var(--primary); }
+    .sc2-body { display: flex; flex-direction: column; gap: 7px; }
+    .sc2-line { height: 9px; background: var(--surface-muted); border-radius: 3px; }
+
+    /* Screenshot 3 — Risk badges */
+    .sc3-list { display: flex; flex-direction: column; gap: 9px; }
+    .sc3-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      background: var(--surface-muted);
+      border-radius: 8px;
+      padding: 11px 12px;
+    }
+    .sc3-badge {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 100px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .sc3-badge.high { background: rgba(239, 68, 68, 0.1); color: #dc2626; }
+    .sc3-badge.med { background: rgba(234, 179, 8, 0.1); color: #b45309; }
+    .sc3-lines { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+    .sc3-line { height: 8px; background: rgba(15,23,42,0.07); border-radius: 3px; }
+
+    /* ─────────────────────────────────────────────────
+       USE CASES
+    ───────────────────────────────────────────────── */
+    .use-cases { background: var(--bg); }
+    .uc-header { text-align: center; margin-bottom: 48px; }
+    .uc-header .section-sub { margin: 0 auto; }
+    .uc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .uc-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 24px;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .uc-card:hover { box-shadow: 0 8px 32px rgba(15,23,42,0.07); transform: translateY(-2px); }
+    .uc-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+      font-size: 22px;
+    }
+    .uc-card h4 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+    .uc-card > p { font-size: 14px; color: var(--text-muted); line-height: 1.65; margin-bottom: 18px; }
+    .uc-quote {
+      font-size: 13px;
+      font-style: italic;
+      color: var(--text-muted);
+      padding: 12px 14px;
+      background: var(--surface-muted);
+      border-radius: 8px;
+      border-left: 3px solid rgba(20, 93, 160, 0.25);
+      line-height: 1.6;
+    }
+
+    /* ─────────────────────────────────────────────────
+       PRICING
+    ───────────────────────────────────────────────── */
+    .pricing { background: var(--surface); border-top: 1px solid var(--border); }
+    .pricing-header { text-align: center; margin-bottom: 48px; }
+    .pricing-header .section-sub { margin: 0 auto; }
+    .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 760px; margin: 0 auto; }
+    .pricing-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 28px;
+    }
+    .pricing-card.pro {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .pricing-card.pro::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 180px; height: 180px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+    }
+    .pricing-plan {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+    .pricing-card .plan-label { color: var(--text-muted); }
+    .pricing-card.pro .plan-label { color: rgba(255,255,255,0.65); }
+    .price-amount {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      margin-bottom: 6px;
+    }
+    .price-amount .currency { font-size: 20px; font-weight: 600; margin-bottom: 5px; }
+    .price-amount .amount { font-size: 44px; font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
+    .price-amount .period { font-size: 14px; color: var(--text-muted); margin-bottom: 6px; }
+    .pricing-card.pro .period { color: rgba(255,255,255,0.6); }
+    .price-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+    .pricing-card.pro .price-desc { color: rgba(255,255,255,0.7); }
+
+    .pricing-features { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+    .pf-item { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5; }
+    .pf-check { flex-shrink: 0; width: 17px; height: 17px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+    .pricing-card .pf-check { background: rgba(22, 163, 74, 0.12); color: #16a34a; }
+    .pricing-card.pro .pf-check { background: rgba(255,255,255,0.15); color: #fff; }
+    .pricing-card.pro .pf-item { color: rgba(255,255,255,0.9); }
+
+    .btn-plan {
+      width: 100%;
+      padding: 12px;
+      border-radius: 9px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.15s;
+    }
+    .btn-plan-free {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      color: var(--text-main);
+    }
+    .btn-plan-free:hover { background: var(--surface-muted); }
+    .btn-plan-pro {
+      background: #fff;
+      border: none;
+      color: var(--primary);
+    }
+    .btn-plan-pro:hover { background: rgba(255,255,255,0.9); }
+
+    /* Billing toggle */
+    .billing-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+    .toggle-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+    .toggle-label.active { color: var(--text-main); font-weight: 600; }
+    .toggle-pill {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: var(--primary);
+      border-radius: 100px;
+      cursor: pointer;
+      transition: background 0.2s;
+      border: none;
+      flex-shrink: 0;
+    }
+    .toggle-pill::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .toggle-pill.yearly::after { transform: translateX(20px); }
+    .save-badge {
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(22,163,74,0.12);
+      color: #16a34a;
+      padding: 3px 10px;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+
+    /* Popular badge */
+    .popular-badge {
+      position: absolute;
+      top: -13px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 4px 14px;
+      border-radius: 100px;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(20,93,160,0.18);
+    }
+    .pricing-card.pro { overflow: visible; }
+    .pricing-card.pro::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 180px; height: 180px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .price-original {
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: line-through;
+      opacity: 0.5;
+      margin-left: 4px;
+      margin-bottom: 5px;
+      align-self: flex-end;
+    }
+
+    /* ─────────────────────────────────────────────────
+       BOTTOM CTA
+    ───────────────────────────────────────────────── */
+    .cta-section {
+      background: var(--bg);
+      padding: 96px 0;
+      text-align: center;
+      border-top: 1px solid var(--border);
+    }
+    .cta-section h2 {
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      margin-bottom: 16px;
+    }
+    .cta-section p {
+      font-size: 18px;
+      color: var(--text-muted);
+      margin-bottom: 36px;
+      max-width: 460px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.65;
+    }
+
+    /* ─────────────────────────────────────────────────
+       FOOTER
+    ───────────────────────────────────────────────── */
+    footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer-logo { font-weight: 700; font-size: 14px; color: var(--primary); display: flex; align-items: center; gap: 7px; }
+    .footer-copy { font-size: 13px; color: var(--text-muted); }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { font-size: 13px; color: var(--text-muted); text-decoration: none; }
+    .footer-links a:hover { color: var(--text-main); }
+
+    /* ── Modals ───────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(4px);
+      z-index: 500;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .modal {
+      background: var(--surface);
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-width: 720px;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(24px);
+      transition: transform 0.25s cubic-bezier(.32,.72,0,1);
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 28px 20px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .modal-header h2 { font-size: 18px; font-weight: 700; }
+    .modal-close {
+      background: var(--surface-muted);
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      transition: background 0.15s, color 0.15s;
+    }
+    .modal-close:hover { background: var(--bg); color: var(--text-main); }
+    .modal-body {
+      overflow-y: auto;
+      padding: 28px 28px 40px;
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--text-main);
+    }
+    .modal-body h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin: 28px 0 8px;
+      color: var(--text-main);
+    }
+    .modal-body h3:first-child { margin-top: 0; }
+    .modal-body p { color: var(--text-muted); margin-bottom: 10px; }
+    .modal-body ul { padding-left: 18px; color: var(--text-muted); margin-bottom: 10px; }
+    .modal-body ul li { margin-bottom: 5px; }
+    .modal-body strong { color: var(--text-main); }
+    .modal-date {
+      display: inline-block;
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--surface-muted);
+      padding: 4px 12px;
+      border-radius: 100px;
+      margin-bottom: 24px;
+    }
+    .modal-highlight {
+      background: rgba(20, 93, 160, 0.05);
+      border: 1px solid rgba(20, 93, 160, 0.12);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin: 16px 0;
+      font-size: 13.5px;
+      color: var(--text-main);
+    }
+
+    /* ─────────────────────────────────────────────────
+       RESPONSIVE
+    ───────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .how-grid { grid-template-columns: 1fr; }
+      .how-connector::after { display: none; }
+      .feature-row { grid-template-columns: 1fr; gap: 36px; }
+      .feature-row.reverse { direction: ltr; }
+      .uc-grid { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      nav { display: none; }
+      .app-mockup { grid-template-columns: 1fr; }
+      .mock-sidebar { display: none; }
+      footer { flex-direction: column; gap: 16px; text-align: center; }
+      .footer-links { flex-wrap: wrap; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── HEADER ──────────────────────────────────── -->
+  <header>
+    <a class="logo" href="/">
+      <i data-lucide="file-text" style="width:18px;height:18px"></i>
+      PDFClarify
+    </a>
+    <nav>
+      <a class="nav-link" href="#how-it-works">How it works</a>
+      <a class="nav-link" href="#features">Features</a>
+      <a class="nav-link" href="#use-cases">Use cases</a>
+      <a class="nav-link" href="#pricing">Pricing</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="btn-ghost" href="#">Sign in</a>
+      <a class="btn-primary" href="demo.html">
+        <i data-lucide="sparkles" style="width:14px;height:14px"></i>
+        Try it free
+      </a>
+    </div>
+  </header>
+
+  <!-- ── HERO ────────────────────────────────────── -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">
+        <i data-lucide="zap" style="width:13px;height:13px"></i>
+        Now in beta — free to try
+        <span>· no credit card</span>
+      </div>
+      <h1>Turn any PDF into <em>clear insights</em> in seconds</h1>
+      <p class="hero-sub">PDFClarify extracts summaries, action items, and key risks from your work documents — so you can act on them, not just read them.</p>
+      <div class="hero-actions">
+        <a class="btn-primary-lg" href="demo.html">
+          <i data-lucide="sparkles" style="width:16px;height:16px"></i>
+          Try it free — no sign up
+        </a>
+        <a class="btn-ghost" href="#how-it-works" style="padding:13px 24px;font-size:15px">See how it works</a>
+      </div>
+      <div class="hero-note">
+        <span><i data-lucide="check-circle" style="width:13px;height:13px;color:#16a34a"></i> Free tier — 5 docs/mo</span>
+        <span><i data-lucide="lock" style="width:13px;height:13px"></i> Your files stay private</span>
+        <span><i data-lucide="clock" style="width:13px;height:13px"></i> Results in ~10 seconds</span>
+      </div>
+
+      <!-- Hero app screenshot mockup -->
+      <div class="hero-screenshot">
+        <div class="screenshot-bar">
+          <div class="screenshot-dots">
+            <div class="dot dot-r"></div>
+            <div class="dot dot-y"></div>
+            <div class="dot dot-g"></div>
+          </div>
+          <div class="screenshot-url">app.pdfclarify.com</div>
+        </div>
+        <div class="app-mockup">
+          <div class="mock-sidebar">
+            <div class="mock-sidebar-title">Recent</div>
+            <div class="mock-hist-item active">
+              <div class="mock-hist-icon"><i data-lucide="file-text" style="width:14px;height:14px"></i></div>
+              <div class="mock-hist-info"><strong>Q4_Strategy.pdf</strong><span>Just now</span></div>
+            </div>
+            <div class="mock-hist-item">
+              <div class="mock-hist-icon"><i data-lucide="file-text" style="width:14px;height:14px"></i></div>
+              <div class="mock-hist-info"><strong>RFC-042.pdf</strong><span>2h ago</span></div>
+            </div>
+            <div class="mock-hist-item">
+              <div class="mock-hist-icon"><i data-lucide="file-text" style="width:14px;height:14px"></i></div>
+              <div class="mock-hist-info"><strong>Audit_Report.pdf</strong><span>Yesterday</span></div>
+            </div>
+          </div>
+          <div class="mock-content">
+            <div class="mock-doc-header">
+              <div class="mock-doc-icon"><i data-lucide="file-text" style="width:20px;height:20px"></i></div>
+              <div>
+                <div class="mock-doc-title">Q4_Strategy_Report.pdf</div>
+                <div class="mock-doc-sub">14 pages · 2.4 MB · Analyzed just now</div>
+              </div>
+            </div>
+            <div class="mock-tabs">
+              <div class="mock-tab active">Summary</div>
+              <div class="mock-tab">Action Items</div>
+              <div class="mock-tab">Risks</div>
+            </div>
+            <div class="mock-lines">
+              <div class="mock-line long"></div>
+              <div class="mock-line medium"></div>
+              <div class="mock-line long"></div>
+              <div class="mock-line short"></div>
+            </div>
+            <div class="mock-bullet-list">
+              <div class="mock-bullet"><div class="mock-bullet-dot"></div><div class="mock-bullet-line" style="width:82%"></div></div>
+              <div class="mock-bullet"><div class="mock-bullet-dot"></div><div class="mock-bullet-line" style="width:66%"></div></div>
+              <div class="mock-bullet"><div class="mock-bullet-dot"></div><div class="mock-bullet-line" style="width:75%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── HOW IT WORKS ─────────────────────────────── -->
+  <section class="section how-it-works" id="how-it-works">
+    <div class="container">
+      <div class="section-label">
+        <i data-lucide="map" style="width:11px;height:11px"></i>
+        How it works
+      </div>
+      <h2 class="section-title">Three steps. Zero fluff.</h2>
+      <p class="section-sub">Upload your document, pick what you need, and get structured output you can actually use.</p>
+
+      <div class="how-grid">
+        <!-- Step 1 -->
+        <div class="how-card how-connector">
+          <div class="how-num">01</div>
+          <div class="how-icon" style="background:rgba(20,93,160,0.08);color:var(--primary)">
+            <i data-lucide="upload-cloud" style="width:22px;height:22px"></i>
+          </div>
+          <h4>Upload your PDF</h4>
+          <p>Drag & drop or click to upload. Works with scanned documents too — OCR is built in. Up to 30 MB, 50 pages on the free tier.</p>
+        </div>
+        <!-- Step 2 -->
+        <div class="how-card how-connector">
+          <div class="how-num">02</div>
+          <div class="how-icon" style="background:rgba(20,93,160,0.08);color:var(--primary)">
+            <i data-lucide="sliders-horizontal" style="width:22px;height:22px"></i>
+          </div>
+          <h4>Choose your mode</h4>
+          <p>Pick what matters: a concise <strong>Summary</strong>, a list of <strong>Action Items</strong>, or a breakdown of <strong>Key Risks</strong> and decisions.</p>
+        </div>
+        <!-- Step 3 -->
+        <div class="how-card">
+          <div class="how-num">03</div>
+          <div class="how-icon" style="background:rgba(22,163,74,0.1);color:#16a34a">
+            <i data-lucide="sparkles" style="width:22px;height:22px"></i>
+          </div>
+          <h4>Get structured output</h4>
+          <p>Results arrive in ~10 seconds as structured text. Copy as Markdown, export to <code style="font-size:12px;color:var(--primary)">.md</code>, or save to your document history.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FEATURES / SCREENSHOTS ───────────────────── -->
+  <section class="section features" id="features">
+    <div class="container">
+
+      <!-- Feature 1: Upload & mode — screenshot on right -->
+      <div class="feature-row">
+        <div class="feature-text">
+          <div class="section-label">
+            <i data-lucide="upload-cloud" style="width:11px;height:11px"></i>
+            Smart Upload
+          </div>
+          <h3>Drop it in, pick a mode — done</h3>
+          <p>The upload flow takes 5 seconds. Drag a PDF onto the page, select your analysis mode, and hit <strong>Analyze</strong>. PDFClarify handles OCR, chunking, and all the prompt engineering under the hood.</p>
+          <div class="feature-checklist">
+            <div class="feature-check">
+              <div class="check-icon"><i data-lucide="check" style="width:10px;height:10px"></i></div>
+              Supports text PDFs and scanned documents (OCR)
+            </div>
+            <div class="feature-check">
+              <div class="check-icon"><i data-lucide="check" style="width:10px;height:10px"></i></div>
+              Up to 30 MB / 50 pages on free tier
+            </div>
+            <div class="feature-check">
+              <div class="check-icon"><i data-lucide="check" style="width:10px;height:10px"></i></div>
+              Three analysis modes: Summary, Actions, Risks
+            </div>
+          </div>
+        </div>
+        <div class="screenshot-card">
+          <div class="sc-bar">
+            <div class="sc-dots">
+              <div class="sc-dot" style="background:#fc5f57"></div>
+              <div class="sc-dot" style="background:#fdbc2c"></div>
+              <div class="sc-dot" style="background:#33c748"></div>
+            </div>
+          </div>
+          <div class="sc-body">
+            <div class="sc1-drop">
+              <div class="sc1-drop-icon"><i data-lucide="upload-cloud" style="width:18px;height:18px"></i></div>
+              <div class="sc1-label">Drop your PDF here</div>
+              <div class="sc1-sub">or browse from your computer · Max 30 MB</div>
+            </div>
+            <div class="sc1-modes">
+              <div class="sc1-mode sel">
+                <div class="sc1-mode-icon"><i data-lucide="highlighter" style="width:12px;height:12px"></i></div>
+                <div class="sc1-mode-title">Summary</div>
+                <div class="sc1-mode-sub">Executive overview</div>
+              </div>
+              <div class="sc1-mode">
+                <div class="sc1-mode-icon"><i data-lucide="list-todo" style="width:12px;height:12px"></i></div>
+                <div class="sc1-mode-title">Action Items</div>
+                <div class="sc1-mode-sub">What needs doing</div>
+              </div>
+              <div class="sc1-mode">
+                <div class="sc1-mode-icon" style="background:rgba(239,68,68,0.1);color:#dc2626"><i data-lucide="alert-triangle" style="width:12px;height:12px"></i></div>
+                <div class="sc1-mode-title">Key Risks</div>
+                <div class="sc1-mode-sub">Blockers & decisions</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature 2: Results — screenshot on left -->
+      <div class="feature-row reverse">
+        <div class="feature-text">
+          <div class="section-label">
+            <i data-lucide="layout-panel-left" style="width:11px;height:11px"></i>
+            Clear Results
+          </div>
+          <h3>Structured output, not walls of text</h3>
+          <p>Results are presented in a clean tabbed layout — flip between Summary, Actions, and Risks instantly. Copy everything as Markdown or export a <code style="font-size:14px;color:var(--primary)">.md</code> file with one click.</p>
+          <div class="feature-checklist">
+            <div class="feature-check">
+              <div class="check-icon"><i data-lucide="check" style="width:10px;height:10px"></i></div>
+              Three tabs: Summary · Action Items · Key Risks
+            </div>
+            <div class="feature-check">
+              <div class="check-icon"><i data-lucide="check" style="width:10px;height:10px"></i></div>
+              One-click "Copy as Markdown"
+            </div>
+            <div class="feature-check">
+              <div class="check-icon"><i data-lucide="check" style="width:10px;height:10px"></i></div>
+              Export to .md file — ready for Notion or Obsidian
+            </div>
+          </div>
+        </div>
+        <div class="screenshot-card">
+          <div class="sc-bar">
+            <div class="sc-dots">
+              <div class="sc-dot" style="background:#fc5f57"></div>
+              <div class="sc-dot" style="background:#fdbc2c"></div>
+              <div class="sc-dot" style="background:#33c748"></div>
+            </div>
+          </div>
+          <div class="sc-body">
+            <div class="sc2-tabs">
+              <div class="sc2-tab active">Summary</div>
+              <div class="sc2-tab">Action Items</div>
+              <div class="sc2-tab">Risks</div>
+            </div>
+            <div class="sc2-body">
+              <div class="sc2-line" style="width:88%"></div>
+              <div class="sc2-line" style="width:72%"></div>
+              <div class="sc2-line" style="width:94%"></div>
+              <div class="sc2-line" style="width:61%"></div>
+              <div style="margin-top:4px"></div>
+              <div class="sc2-line" style="width:90%"></div>
+              <div class="sc2-line" style="width:79%"></div>
+              <div class="sc2-line" style="width:55%"></div>
+              <div style="margin-top:12px;display:flex;gap:8px">
+                <div style="background:rgba(20,93,160,0.09);border-radius:6px;padding:7px 12px;font-size:11px;font-weight:600;color:var(--primary);display:flex;gap:5px;align-items:center">
+                  <i data-lucide="copy" style="width:11px;height:11px"></i> Copy as Markdown
+                </div>
+                <div style="background:var(--surface-muted);border-radius:6px;padding:7px 12px;font-size:11px;font-weight:600;color:var(--text-muted);display:flex;gap:5px;align-items:center">
+                  <i data-lucide="download" style="width:11px;height:11px"></i> Export .md
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature 3: Risks & history — screenshot on right -->
+      <div class="feature-row">
+        <div class="feature-text">
+          <div class="section-label">
+            <i data-lucide="alert-triangle" style="width:11px;height:11px"></i>
+            Risk Detection
+          </div>
+          <h3>Spot problems before they become blockers</h3>
+          <p>The Risks mode surfaces hidden dependencies, compliance gaps, and timeline conflicts with severity labels — so nothing slips through review.</p>
+          <div class="feature-checklist">
+            <div class="feature-check">
+              <div class="check-icon"><i data-lucide="check" style="width:10px;height:10px"></i></div>
+              High / Medium severity labels on each risk
+            </div>
+            <div class="feature-check">
+              <div class="check-icon"><i data-lucide="check" style="width:10px;height:10px"></i></div>
+              Contextual explanation, not just bullet labels
+            </div>
+            <div class="feature-check">
+              <div class="check-icon"><i data-lucide="check" style="width:10px;height:10px"></i></div>
+              Works on specs, audits, contracts, and strategy docs
+            </div>
+          </div>
+        </div>
+        <div class="screenshot-card">
+          <div class="sc-bar">
+            <div class="sc-dots">
+              <div class="sc-dot" style="background:#fc5f57"></div>
+              <div class="sc-dot" style="background:#fdbc2c"></div>
+              <div class="sc-dot" style="background:#33c748"></div>
+            </div>
+          </div>
+          <div class="sc-body">
+            <div class="sc2-tabs">
+              <div class="sc2-tab">Summary</div>
+              <div class="sc2-tab">Action Items</div>
+              <div class="sc2-tab active">Risks</div>
+            </div>
+            <div class="sc3-list">
+              <div class="sc3-item">
+                <span class="sc3-badge high">High</span>
+                <div class="sc3-lines">
+                  <div class="sc3-line" style="width:80%"></div>
+                  <div class="sc3-line" style="width:62%"></div>
+                </div>
+              </div>
+              <div class="sc3-item">
+                <span class="sc3-badge high">High</span>
+                <div class="sc3-lines">
+                  <div class="sc3-line" style="width:73%"></div>
+                  <div class="sc3-line" style="width:50%"></div>
+                </div>
+              </div>
+              <div class="sc3-item">
+                <span class="sc3-badge med">Medium</span>
+                <div class="sc3-lines">
+                  <div class="sc3-line" style="width:68%"></div>
+                  <div class="sc3-line" style="width:42%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── USE CASES ─────────────────────────────────── -->
+  <section class="section use-cases" id="use-cases">
+    <div class="container">
+      <div class="uc-header">
+        <div class="section-label" style="margin:0 auto 20px">
+          <i data-lucide="users" style="width:11px;height:11px"></i>
+          Who it's for
+        </div>
+        <h2 class="section-title">Built for people who read a lot of PDFs</h2>
+        <p class="section-sub">Whether you're reviewing a strategy deck, a technical RFC, or a client audit — PDFClarify cuts the time in half.</p>
+      </div>
+      <div class="uc-grid">
+        <!-- PM -->
+        <div class="uc-card">
+          <div class="uc-avatar" style="background:rgba(20,93,160,0.08)">📋</div>
+          <h4>Product & Project Managers</h4>
+          <p>Quickly extract decisions, action items, and owner assignments from strategy docs, PRDs, and meeting notes — without reading every line.</p>
+          <div class="uc-quote">"I used to spend 40 minutes summarizing each strategy doc for my team. Now it takes 30 seconds."</div>
+        </div>
+        <!-- Consultant -->
+        <div class="uc-card">
+          <div class="uc-avatar" style="background:rgba(20,93,160,0.08)">📊</div>
+          <h4>Consultants & Analysts</h4>
+          <p>Process client audit reports, financial statements, and legal agreements fast. Identify key risks and outstanding decisions before the kick-off call.</p>
+          <div class="uc-quote">"I review 4–5 client docs a day. PDFClarify cuts that prep time by more than half."</div>
+        </div>
+        <!-- Dev -->
+        <div class="uc-card">
+          <div class="uc-avatar" style="background:rgba(20,93,160,0.08)">⚙️</div>
+          <h4>Developers & Tech Leads</h4>
+          <p>Parse RFCs, architecture specs, and vendor documentation. Get a clear summary of what changed, what's required, and what could break.</p>
+          <div class="uc-quote">"Finally a tool that gets to the point of a 30-page RFC without me having to read all 30 pages."</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PRICING ───────────────────────────────────── -->
+  <section class="section pricing" id="pricing">
+    <div class="container">
+      <div class="pricing-header">
+        <div class="section-label" style="margin:0 auto 20px">
+          <i data-lucide="tag" style="width:11px;height:11px"></i>
+          Pricing
+        </div>
+        <h2 class="section-title">Simple, honest pricing</h2>
+        <p class="section-sub">Start free, upgrade when you need more. No hidden limits, no per-document traps.</p>
+      </div>
+
+      <!-- Billing toggle -->
+      <div class="billing-toggle">
+        <span class="toggle-label active" id="lbl-monthly">Monthly</span>
+        <button class="toggle-pill" id="billing-toggle" aria-label="Switch billing period"></button>
+        <span class="toggle-label" id="lbl-yearly">Yearly <span class="save-badge">22% cheaper</span></span>
+      </div>
+
+      <div class="pricing-grid">
+        <!-- Free -->
+        <div class="pricing-card">
+          <div class="pricing-plan plan-label">Free</div>
+          <div class="price-amount">
+            <span class="currency">$</span>
+            <span class="amount">0</span>
+            <span class="period">/month</span>
+          </div>
+          <p class="price-desc">Everything you need to try it out. No credit card required.</p>
+          <div class="pricing-features">
+            <div class="pf-item">
+              <div class="pf-check"><i data-lucide="check" style="width:10px;height:10px"></i></div>
+              3 documents per month
+            </div>
+            <div class="pf-item">
+              <div class="pf-check"><i data-lucide="check" style="width:10px;height:10px"></i></div>
+              Up to 30 pages per doc
+            </div>
+            <div class="pf-item">
+              <div class="pf-check"><i data-lucide="check" style="width:10px;height:10px"></i></div>
+              All 3 analysis modes
+            </div>
+            <div class="pf-item">
+              <div class="pf-check"><i data-lucide="check" style="width:10px;height:10px"></i></div>
+              Markdown export
+            </div>
+          </div>
+          <button class="btn-plan btn-plan-free" onclick="window.location.href='demo.html'">Get started free</button>
+        </div>
+
+        <!-- Pro -->
+        <div class="pricing-card pro" style="position:relative;margin-top:16px">
+          <div class="popular-badge">⭐ Most Popular</div>
+          <div class="pricing-plan plan-label">Pro</div>
+          <div class="price-amount">
+            <span class="currency" style="color:rgba(255,255,255,0.8)">$</span>
+            <span class="amount" id="pro-price">9</span>
+            <span class="price-original" id="pro-original" style="display:none;color:rgba(255,255,255,0.5)">$9</span>
+            <span class="period" id="pro-period">/month</span>
+          </div>
+          <p class="price-desc" id="pro-desc">For power users who process documents every day.</p>
+          <div class="pricing-features">
+            <div class="pf-item">
+              <div class="pf-check"><i data-lucide="check" style="width:10px;height:10px"></i></div>
+              Unlimited documents
+            </div>
+            <div class="pf-item">
+              <div class="pf-check"><i data-lucide="check" style="width:10px;height:10px"></i></div>
+              Up to 200 pages per doc
+            </div>
+            <div class="pf-item">
+              <div class="pf-check"><i data-lucide="check" style="width:10px;height:10px"></i></div>
+              Document history (90 days)
+            </div>
+            <div class="pf-item">
+              <div class="pf-check"><i data-lucide="check" style="width:10px;height:10px"></i></div>
+              Priority processing
+            </div>
+            <div class="pf-item">
+              <div class="pf-check"><i data-lucide="check" style="width:10px;height:10px"></i></div>
+              Notion export <span style="font-size:11px;opacity:0.7">(coming soon)</span>
+            </div>
+          </div>
+          <button class="btn-plan btn-plan-pro" id="pro-cta">Get Pro — $9/mo</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── BOTTOM CTA ────────────────────────────────── -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Ready to stop reading, start acting?</h2>
+      <p>Drop your first PDF in under 10 seconds. No account needed to try.</p>
+      <a class="btn-primary-lg" href="demo.html">
+        <i data-lucide="sparkles" style="width:16px;height:16px"></i>
+        Try PDFClarify free
+      </a>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ────────────────────────────────────── -->
+  <footer>
+    <div class="footer-logo">
+      <i data-lucide="file-text" style="width:16px;height:16px"></i>
+      PDFClarify
+    </div>
+    <span class="footer-copy">© 2026 PDFClarify. All rights reserved.</span>
+    <div class="footer-links">
+      <a href="#" id="open-privacy">Privacy Policy</a>
+      <a href="#" id="open-terms">Terms of Use</a>
+      <a href="#">Contact</a>
+    </div>
+  </footer>
+
+  <!-- ── PRIVACY POLICY MODAL ──────────────────────── -->
+  <div class="modal-overlay" id="privacy-modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="privacy-title">
+      <div class="modal-header">
+        <h2 id="privacy-title">Privacy Policy</h2>
+        <button class="modal-close" data-close="privacy-modal" aria-label="Close">
+          <i data-lucide="x" style="width:15px;height:15px"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <span class="modal-date">Last updated: April 1, 2026</span>
+
+        <div class="modal-highlight">
+          <strong>Short version:</strong> Your documents are processed to generate results and then deleted. We do not sell your data. We do not use your files to train AI models.
+        </div>
+
+        <h3>1. What data we collect</h3>
+        <p>When you use PDFClarify, we collect:</p>
+        <ul>
+          <li><strong>Your email address</strong> — only if you create an account (used for login and billing).</li>
+          <li><strong>Uploaded PDF files</strong> — temporarily stored in encrypted cloud storage (Cloudflare R2) for the duration of processing, then deleted.</li>
+          <li><strong>Analysis results</strong> — the structured output (summary, actions, risks) saved to your account history if you are signed in.</li>
+          <li><strong>Basic usage metadata</strong> — document count, page count, timestamps. Never file contents in logs.</li>
+        </ul>
+
+        <h3>2. How we process your documents</h3>
+        <p>Your PDF is sent to the <strong>Google Vertex AI</strong> API (Gemini 2.0 Flash model) for analysis. We use Vertex AI — not Google AI Studio — which means:</p>
+        <ul>
+          <li>Google does <strong>not</strong> use your document contents to train its models.</li>
+          <li>Data is <strong>not retained</strong> by Google after the API response is returned.</li>
+          <li>All data in transit is encrypted with TLS 1.3.</li>
+          <li>Google's processing is governed by a signed Data Processing Agreement (DPA) under GDPR.</li>
+        </ul>
+
+        <h3>3. Data retention</h3>
+        <ul>
+          <li><strong>PDF files:</strong> Deleted from storage immediately after analysis is complete.</li>
+          <li><strong>Analysis results:</strong> Stored in your account history. You can delete them at any time from your dashboard.</li>
+          <li><strong>Accounts:</strong> Deleted within 30 days of an account deletion request.</li>
+        </ul>
+
+        <h3>4. Data sharing</h3>
+        <p>We do not sell, rent, or share your personal data with third parties, except:</p>
+        <ul>
+          <li><strong>Google Vertex AI</strong> — for document analysis (see Section 2).</li>
+          <li><strong>Cloudflare</strong> — infrastructure provider (storage, hosting, database). Cloudflare's DPA covers GDPR compliance.</li>
+          <li><strong>Stripe / Lemon Squeezy</strong> — payment processing only (email and billing data, no document contents).</li>
+        </ul>
+
+        <h3>5. Your rights (GDPR)</h3>
+        <p>If you are in the EU or EEA, you have the right to access, correct, export, or delete your personal data at any time. To exercise these rights, contact us at <strong>privacy@pdfclarify.com</strong>. We will respond within 30 days.</p>
+
+        <h3>6. Cookies</h3>
+        <p>We use only essential session cookies for authentication. No tracking cookies, no third-party advertising pixels.</p>
+
+        <h3>7. Changes to this policy</h3>
+        <p>We will notify registered users by email if we make material changes to this policy.</p>
+
+        <h3>8. Contact</h3>
+        <p>Questions? Email us at <strong>privacy@pdfclarify.com</strong>.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TERMS OF USE MODAL ────────────────────────── -->
+  <div class="modal-overlay" id="terms-modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="terms-title">
+      <div class="modal-header">
+        <h2 id="terms-title">Terms of Use</h2>
+        <button class="modal-close" data-close="terms-modal" aria-label="Close">
+          <i data-lucide="x" style="width:15px;height:15px"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <span class="modal-date">Last updated: April 1, 2026</span>
+
+        <div class="modal-highlight">
+          <strong>Short version:</strong> Use PDFClarify legally and in good faith. Don't upload documents you don't have the right to process. We provide the service as-is and are not liable for the AI-generated output.
+        </div>
+
+        <h3>1. Acceptance</h3>
+        <p>By using PDFClarify ("the Service"), you agree to these Terms. If you do not agree, do not use the Service.</p>
+
+        <h3>2. Permitted use</h3>
+        <p>You may use PDFClarify to analyze PDF documents that you own or have the legal right to process. You must not:</p>
+        <ul>
+          <li>Upload documents containing other people's personal data without their consent.</li>
+          <li>Use the Service to process classified, top-secret, or government-restricted documents.</li>
+          <li>Attempt to reverse-engineer, scrape, or abuse the API.</li>
+          <li>Use the Service for any unlawful purpose.</li>
+        </ul>
+
+        <h3>3. AI-generated output disclaimer</h3>
+        <p>PDFClarify uses AI to generate summaries, action items, and risk analyses. This output:</p>
+        <ul>
+          <li>Is provided for informational purposes only.</li>
+          <li>May contain errors, omissions, or misinterpretations.</li>
+          <li>Does <strong>not</strong> constitute legal, financial, medical, or professional advice.</li>
+          <li>Should always be reviewed by a qualified professional before acting on it.</li>
+        </ul>
+
+        <h3>4. Data and privacy</h3>
+        <p>Your use of the Service is also governed by our <strong>Privacy Policy</strong>. By using the Service, you acknowledge that documents you upload will be processed by Google Vertex AI under the terms described in the Privacy Policy.</p>
+
+        <h3>5. Free and Pro tiers</h3>
+        <ul>
+          <li><strong>Free tier:</strong> 5 documents per month, up to 50 pages each. We reserve the right to adjust free tier limits with 14 days' notice.</li>
+          <li><strong>Pro tier:</strong> Billed monthly. Cancellable at any time. No refunds for partial months unless required by applicable law.</li>
+        </ul>
+
+        <h3>6. Service availability</h3>
+        <p>We aim for high availability but do not guarantee uninterrupted service. We are not liable for losses caused by downtime, processing errors, or data loss beyond the limits set by applicable law.</p>
+
+        <h3>7. Intellectual property</h3>
+        <p>You retain full ownership of your documents and the AI-generated output derived from them. We claim no rights over your content.</p>
+
+        <h3>8. Termination</h3>
+        <p>We may suspend accounts that violate these Terms. You may close your account at any time by contacting <strong>support@pdfclarify.com</strong>.</p>
+
+        <h3>9. Governing law</h3>
+        <p>These Terms are governed by the laws of the European Union and the country in which PDFClarify is registered. Disputes will be resolved in the competent courts of that jurisdiction.</p>
+
+        <h3>10. Contact</h3>
+        <p>Questions about these Terms? Email us at <strong>legal@pdfclarify.com</strong>.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    // ── Modal logic ───────────────────────────────────
+    function openModal(id) {
+      document.getElementById(id).classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    document.getElementById('open-privacy').addEventListener('click', e => { e.preventDefault(); openModal('privacy-modal'); });
+    document.getElementById('open-terms').addEventListener('click',   e => { e.preventDefault(); openModal('terms-modal'); });
+
+    document.querySelectorAll('.modal-close').forEach(btn => {
+      btn.addEventListener('click', () => closeModal(btn.dataset.close));
+    });
+
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', e => {
+        if (e.target === overlay) closeModal(overlay.id);
+      });
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.open').forEach(m => closeModal(m.id));
+      }
+    });
+    // ── Pricing toggle ────────────────────────────────
+    const toggleBtn   = document.getElementById('billing-toggle');
+    const lblMonthly  = document.getElementById('lbl-monthly');
+    const lblYearly   = document.getElementById('lbl-yearly');
+    const proPrice    = document.getElementById('pro-price');
+    const proOriginal = document.getElementById('pro-original');
+    const proPeriod   = document.getElementById('pro-period');
+    const proDesc     = document.getElementById('pro-desc');
+    const proCta      = document.getElementById('pro-cta');
+
+    let isYearly = false;
+
+    toggleBtn.addEventListener('click', () => {
+      isYearly = !isYearly;
+      toggleBtn.classList.toggle('yearly', isYearly);
+      lblMonthly.classList.toggle('active', !isYearly);
+      lblYearly.classList.toggle('active', isYearly);
+
+      if (isYearly) {
+        // $7/mo billed as $84/yr  (vs $9×12=$108 → 22% cheaper)
+        proPrice.textContent    = '7';
+        proOriginal.textContent = '$9';
+        proOriginal.style.display = 'inline';
+        proPeriod.textContent   = '/mo · billed $84/yr';
+        proDesc.textContent     = 'Same as monthly, 2 months free. Best value.';
+        proCta.textContent      = 'Get Pro — $84/yr';
+      } else {
+        proPrice.textContent    = '9';
+        proOriginal.style.display = 'none';
+        proPeriod.textContent   = '/month';
+        proDesc.textContent     = 'For power users who process documents every day.';
+        proCta.textContent      = 'Get Pro — $9/mo';
+      }
+    });
+  </script>
+</body>
+</html>
