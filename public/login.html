@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign in — PDFClarify</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:            #F5F3F0;
+      --surface:       #FFFFFF;
+      --surface-muted: #F0EEEA;
+      --primary:       #145DA0;
+      --primary-hover: #0F4C81;
+      --text-main:     #111827;
+      --text-muted:    #6B7280;
+      --text-faint:    #9CA3AF;
+      --border:        rgba(15, 23, 42, 0.08);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .wrapper {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    /* ── Logo ─────────────────────────────────────────── */
+    .logo-row {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+    .logo-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* ── Card ─────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+    /* ── Step header ──────────────────────────────────── */
+    .step-header {
+      margin-bottom: 24px;
+    }
+    .step-header h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .step-header p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .step-header p strong { color: var(--primary); font-weight: 600; }
+
+    /* ── Form elements ────────────────────────────────── */
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    input[type="email"],
+    input[type="text"] {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    input[type="email"]:focus,
+    input[type="text"]:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(20,93,160,0.12);
+    }
+    input.code-input {
+      letter-spacing: 0.35em;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    input::placeholder { color: var(--text-faint); letter-spacing: 0; }
+
+    /* ── Buttons ──────────────────────────────────────── */
+    .btn-primary {
+      width: 100%;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-ghost {
+      background: none;
+      border: none;
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 8px;
+      transition: color 0.15s;
+    }
+    .btn-ghost:hover { color: var(--text-main); }
+
+    /* ── Field group ──────────────────────────────────── */
+    .field { margin-bottom: 16px; }
+
+    /* ── Error ────────────────────────────────────────── */
+    .error-box {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #DC2626;
+      margin-bottom: 16px;
+    }
+    .error-box.visible { display: flex; }
+
+    /* ── Divider ──────────────────────────────────────── */
+    .btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
+
+    /* ── Footer note ──────────────────────────────────── */
+    .footer-note {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-faint);
+      margin-top: 20px;
+    }
+    .footer-note a { color: var(--text-faint); text-decoration: underline; }
+    .footer-note a:hover { color: var(--text-main); }
+
+    /* ── Spinner ──────────────────────────────────────── */
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Tab switcher ─────────────────────────────────── */
+    .tab-switcher { display:flex; background:var(--surface-muted); border-radius:10px; padding:3px; margin-bottom:28px; }
+    .tab-btn {
+      flex:1; padding:9px 0; font-family:'Inter',sans-serif; font-size:13px; font-weight:600;
+      color:var(--text-muted); background:none; border:none; border-radius:8px; cursor:pointer; transition:all 0.17s;
+    }
+    .tab-btn.active { background:var(--surface); color:var(--text-main); box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+
+    /* ── Password field with eye toggle ───────────────── */
+    input[type="password"] {
+      width:100%; padding:11px 44px 11px 14px; border:1.5px solid var(--border); border-radius:10px;
+      background:var(--bg); font-family:'Inter',sans-serif; font-size:14px; color:var(--text-main);
+      outline:none; transition:border-color 0.15s, box-shadow 0.15s; appearance:none;
+    }
+    input[type="password"]:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(20,93,160,0.12); }
+    .pass-wrap { position:relative; }
+    .eye-btn {
+      position:absolute; right:12px; top:50%; transform:translateY(-50%);
+      background:none; border:none; cursor:pointer; padding:4px; color:var(--text-faint);
+      border-radius:5px; transition:color 0.15s; display:flex; align-items:center;
+    }
+    .eye-btn:hover { color:var(--text-main); }
+
+    /* ── Password strength ────────────────────────────── */
+    .strength-bar { height:3px; border-radius:2px; margin-top:7px; background:var(--surface-muted); overflow:hidden; }
+    .strength-fill { height:100%; width:0; border-radius:2px; transition:width 0.3s, background 0.3s; }
+    .strength-label { font-size:11px; margin-top:4px; text-align:right; min-height:14px; }
+
+    /* ── Helper note ──────────────────────────────────── */
+    .helper-note { font-size:12px; color:var(--text-faint); text-align:center; margin-top:16px; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+
+    <!-- Logo -->
+    <div class="logo-row">
+      <div class="logo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        PDFClarify
+      </div>
+      <p class="logo-sub">Understand any PDF in seconds</p>
+    </div>
+
+    <!-- Card -->
+    <div class="card">
+
+      <!-- Tab switcher -->
+      <div class="tab-switcher">
+        <button class="tab-btn active" id="tab-signin"   onclick="switchTab('signin')">Sign in</button>
+        <button class="tab-btn"        id="tab-register" onclick="switchTab('register')">Create account</button>
+      </div>
+
+      <!-- ── Sign In ──────────────────────────────────── -->
+      <div id="form-signin">
+        <form id="signin-form" onsubmit="handleSignIn(event)">
+          <div class="field">
+            <label for="si-email">Email address</label>
+            <input type="email" id="si-email" placeholder="you@company.com" autocomplete="email" required autofocus>
+          </div>
+
+          <div class="field">
+            <label for="si-password">Password</label>
+            <div class="pass-wrap">
+              <input type="password" id="si-password" placeholder="Enter your password" autocomplete="current-password" required>
+              <button type="button" class="eye-btn" onclick="toggleEye('si-password', this)" tabindex="-1" title="Show password">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="error-box" id="si-error">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span id="si-error-text"></span>
+          </div>
+
+          <button type="submit" class="btn-primary" id="si-btn" style="margin-top:20px;">Sign in</button>
+        </form>
+        <p class="helper-note">No account?
+          <button onclick="switchTab('register')" style="background:none;border:none;color:var(--primary);font-weight:600;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;">Create one →</button>
+        </p>
+      </div>
+
+      <!-- ── Create Account ───────────────────────────── -->
+      <div id="form-register" style="display:none;">
+        <form id="register-form" onsubmit="handleRegister(event)">
+          <div class="field">
+            <label for="reg-email">Email address</label>
+            <input type="email" id="reg-email" placeholder="you@company.com" autocomplete="email" required>
+          </div>
+
+          <div class="field">
+            <label for="reg-password">Password</label>
+            <div class="pass-wrap">
+              <input type="password" id="reg-password" placeholder="Choose a strong password" autocomplete="new-password" required oninput="updateStrength(this.value)">
+              <button type="button" class="eye-btn" onclick="toggleEye('reg-password', this)" tabindex="-1" title="Show password">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+            <div class="strength-label" id="strength-label"></div>
+          </div>
+
+          <div class="field">
+            <label for="reg-confirm">Confirm password</label>
+            <div class="pass-wrap">
+              <input type="password" id="reg-confirm" placeholder="Repeat your password" autocomplete="new-password" required>
+              <button type="button" class="eye-btn" onclick="toggleEye('reg-confirm', this)" tabindex="-1" title="Show password">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="error-box" id="reg-error">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span id="reg-error-text"></span>
+          </div>
+
+          <button type="submit" class="btn-primary" id="reg-btn" style="margin-top:20px;">Create account</button>
+        </form>
+        <p class="helper-note">Already have an account?
+          <button onclick="switchTab('signin')" style="background:none;border:none;color:var(--primary);font-weight:600;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;">Sign in →</button>
+        </p>
+      </div>
+
+    </div><!-- /card -->
+
+    <p class="footer-note">
+      By continuing you agree to our
+      <a href="index.html">Terms</a> and <a href="index.html">Privacy Policy</a>.
+    </p>
+  </div>
+
+  <script>
+    const EYE_OPEN   = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+    const EYE_CLOSED = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`;
+
+    function toggleEye(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const icon  = btn.querySelector('svg');
+      if (input.type === 'password') {
+        input.type     = 'text';
+        icon.innerHTML = EYE_CLOSED;
+        btn.title      = 'Hide password';
+      } else {
+        input.type     = 'password';
+        icon.innerHTML = EYE_OPEN;
+        btn.title      = 'Show password';
+      }
+    }
+
+    function switchTab(tab) {
+      const isSignin = tab === 'signin';
+      document.getElementById('form-signin').style.display   = isSignin ? '' : 'none';
+      document.getElementById('form-register').style.display = isSignin ? 'none' : '';
+      document.getElementById('tab-signin').classList.toggle('active',   isSignin);
+      document.getElementById('tab-register').classList.toggle('active', !isSignin);
+      setTimeout(() => document.getElementById(isSignin ? 'si-email' : 'reg-email').focus(), 30);
+    }
+
+    function showError(boxId, textId, msg) {
+      document.getElementById(textId).textContent = msg;
+      document.getElementById(boxId).classList.add('visible');
+    }
+    function hideError(boxId) { document.getElementById(boxId).classList.remove('visible'); }
+
+    function setLoading(btnId, loading, label) {
+      const btn = document.getElementById(btnId);
+      btn.disabled  = loading;
+      btn.innerHTML = loading ? `<div class="spinner"></div>${label}` : label;
+    }
+
+    function updateStrength(val) {
+      let score = 0;
+      if (val.length >= 8)            score++;
+      if (val.length >= 12)           score++;
+      if (/[A-Z]/.test(val))          score++;
+      if (/[0-9]/.test(val))          score++;
+      if (/[^A-Za-z0-9]/.test(val))   score++;
+      const map = [
+        { w: '0%',   bg: 'transparent', text: '' },
+        { w: '25%',  bg: '#EF4444',     text: 'Weak' },
+        { w: '50%',  bg: '#F97316',     text: 'Fair' },
+        { w: '75%',  bg: '#EAB308',     text: 'Good' },
+        { w: '100%', bg: '#22C55E',     text: 'Strong' },
+      ];
+      const s = val.length === 0 ? 0 : Math.max(1, Math.min(score, 4));
+      document.getElementById('strength-fill').style.width      = map[s].w;
+      document.getElementById('strength-fill').style.background = map[s].bg;
+      document.getElementById('strength-label').textContent     = map[s].text;
+      document.getElementById('strength-label').style.color     = map[s].bg;
+    }
+
+    async function handleSignIn(e) {
+      e.preventDefault();
+      hideError('si-error');
+      const email    = document.getElementById('si-email').value.trim();
+      const password = document.getElementById('si-password').value;
+      setLoading('si-btn', true, 'Signing in…');
+      try {
+        const res  = await fetch('/api/auth/login', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) { showError('si-error', 'si-error-text', data.error || 'Invalid email or password'); setLoading('si-btn', false, 'Sign in'); return; }
+        window.location.href = '/app.html';
+      } catch {
+        showError('si-error', 'si-error-text', 'Network error — please try again');
+        setLoading('si-btn', false, 'Sign in');
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      hideError('reg-error');
+      const email    = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+      const confirm  = document.getElementById('reg-confirm').value;
+      if (password.length < 8) { showError('reg-error', 'reg-error-text', 'Password must be at least 8 characters'); return; }
+      if (password !== confirm) { showError('reg-error', 'reg-error-text', 'Passwords do not match'); document.getElementById('reg-confirm').focus(); return; }
+      setLoading('reg-btn', true, 'Creating account…');
+      try {
+        const res  = await fetch('/api/auth/register', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) { showError('reg-error', 'reg-error-text', data.error || 'Could not create account'); setLoading('reg-btn', false, 'Create account'); return; }
+        window.location.href = '/app.html';
+      } catch {
+        showError('reg-error', 'reg-error-text', 'Network error — please try again');
+        setLoading('reg-btn', false, 'Create account');
+      }
+    }
+  </script>
+</body>
+</html>
