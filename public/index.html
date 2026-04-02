@@ -1557,11 +1557,11 @@
         const data = await res.json();
         if (data.user) {
           // User is logged in — logo goes to dashboard, nav shows Dashboard button
-          document.getElementById('logo-link').href = '/app.html';
+          document.getElementById('logo-link').href = '/dashboard.html';
           const actions = document.querySelector('.nav-actions');
           actions.innerHTML = `
             <span style="font-size:13px;color:var(--text-muted);">${data.user.email}</span>
-            <a class="btn-primary" href="/app.html">
+            <a class="btn-primary" href="/dashboard.html">
               <i data-lucide="layout-dashboard" style="width:14px;height:14px"></i>
               Dashboard
             </a>`;

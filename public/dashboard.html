@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDFClarify — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:            #F5F3F0;
+      --surface:       #FFFFFF;
+      --surface-muted: #F0EEEA;
+      --primary:       #145DA0;
+      --primary-hover: #0F4C81;
+      --text-main:     #111827;
+      --text-muted:    #6B7280;
+      --text-faint:    #9CA3AF;
+      --border:        rgba(15, 23, 42, 0.08);
+      --green:         #059669;
+      --red:           #DC2626;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ──────────────────────────────────────────── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo {
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      text-decoration: none;
+    }
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .badge-pro {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 100px;
+      background: rgba(20,93,160,0.1);
+      color: var(--primary);
+    }
+    .btn-upgrade {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-upgrade:hover { background: var(--primary-hover); }
+    .nav-email {
+      font-size: 13px;
+      color: var(--text-muted);
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .btn-signout {
+      background: none;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: var(--text-faint);
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: color 0.15s;
+    }
+    .btn-signout:hover { color: var(--text-main); }
+
+    /* ── Helpers ──────────────────────────────────────────── */
+    .hidden { display: none !important; }
+
+    /* ── Main layout ─────────────────────────────────────── */
+    main {
+      flex: 1;
+      padding: 28px 24px 56px;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .dash-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      gap: 16px;
+    }
+    .dash-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .dash-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+    .btn-analyze-top {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary);
+      text-decoration: none;
+      padding: 9px 16px;
+      border-radius: 9px;
+      border: 1.5px solid rgba(20,93,160,0.25);
+      background: rgba(20,93,160,0.04);
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-analyze-top:hover {
+      background: rgba(20,93,160,0.09);
+      border-color: rgba(20,93,160,0.4);
+    }
+
+    /* ── 3-column grid ─────────────────────────────────── */
+    .dash-grid {
+      display: grid;
+      grid-template-columns: 284px 1fr 264px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    /* ── Panel ─────────────────────────────────────────── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .panel-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .panel-count {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-faint);
+      background: var(--surface-muted);
+      padding: 2px 8px;
+      border-radius: 100px;
+    }
+
+    /* ── Recent list ───────────────────────────────────── */
+    .recent-list { display: flex; flex-direction: column; }
+    .recent-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+    .recent-item:last-child { border-bottom: none; }
+    .recent-item:hover { background: rgba(20,93,160,0.03); }
+    .recent-item.active {
+      background: rgba(20,93,160,0.06);
+      border-left: 3px solid var(--primary);
+      padding-left: 13px;
+    }
+    .recent-icon {
+      width: 32px;
+      height: 32px;
+      background: rgba(20,93,160,0.08);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+    .recent-info { flex: 1; min-width: 0; }
+    .recent-name {
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+    .recent-meta {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--text-faint);
+      flex-wrap: wrap;
+    }
+    .mode-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 100px;
+      flex-shrink: 0;
+    }
+    .mode-badge.summary { background: rgba(20,93,160,0.1);  color: var(--primary); }
+    .mode-badge.actions { background: rgba(5,150,105,0.1);  color: var(--green); }
+    .mode-badge.risks   { background: rgba(220,38,38,0.1);  color: var(--red); }
+    .recent-chevron {
+      color: var(--text-faint);
+      flex-shrink: 0;
+      opacity: 0;
+      transition: opacity 0.1s;
+    }
+    .recent-item:hover .recent-chevron,
+    .recent-item.active .recent-chevron { opacity: 1; }
+
+    /* Empty state */
+    .empty-state {
+      padding: 40px 20px;
+      text-align: center;
+    }
+    .empty-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--surface-muted);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      color: var(--text-faint);
+    }
+    .empty-state h4 { font-size: 13px; font-weight: 600; margin-bottom: 5px; }
+    .empty-state p  { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+    /* ── Center panel states ────────────────────────────── */
+    /* Upload */
+    #center-upload .upload-body { padding: 22px; }
+
+    .drop-zone {
+      border: 2px dashed rgba(20,93,160,0.2);
+      border-radius: 12px;
+      padding: 38px 24px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: rgba(20,93,160,0.02);
+      text-align: center;
+      position: relative;
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: var(--primary);
+      background: rgba(20,93,160,0.04);
+    }
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .drop-icon {
+      width: 42px;
+      height: 42px;
+      background: rgba(20,93,160,0.08);
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 13px;
+      color: var(--primary);
+    }
+    .drop-zone h3 { font-size: 14px; font-weight: 600; margin-bottom: 5px; }
+    .drop-zone p  { font-size: 13px; color: var(--text-muted); }
+    .drop-zone p span { color: var(--primary); font-weight: 500; }
+    .file-limit   { font-size: 11px; color: var(--text-faint); margin-top: 5px; }
+
+    .file-chip {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: rgba(20,93,160,0.05);
+      border: 1.5px solid rgba(20,93,160,0.18);
+      border-radius: 10px;
+      margin-top: 14px;
+    }
+    .file-chip.visible { display: flex; }
+    .file-chip-icon {
+      width: 32px;
+      height: 32px;
+      background: rgba(20,93,160,0.1);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+    .file-chip-info { flex: 1; min-width: 0; }
+    .file-chip-info strong { font-size: 12px; font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-chip-info span  { font-size: 11px; color: var(--text-muted); }
+    .file-chip-remove {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-faint);
+      padding: 3px;
+      border-radius: 4px;
+    }
+    .file-chip-remove:hover { color: var(--red); }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-faint);
+      margin-bottom: 9px;
+    }
+    .modes {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 18px;
+    }
+    .mode-card {
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 10px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      background: var(--surface);
+    }
+    .mode-card:hover  { border-color: rgba(20,93,160,0.3); background: rgba(20,93,160,0.02); }
+    .mode-card.selected { border-color: var(--primary); background: rgba(20,93,160,0.04); }
+    .mode-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+    .mode-card h5 { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+    .mode-card p  { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+
+    .analyze-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 18px;
+    }
+    .limit-hint { font-size: 11px; color: var(--text-faint); flex: 1; padding-right: 12px; }
+    .limit-hint a { color: var(--primary); font-weight: 500; }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: 'Inter', sans-serif;
+      flex-shrink: 0;
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .error-box {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: var(--red);
+      margin-top: 12px;
+    }
+    .error-box.visible { display: flex; }
+
+    /* Processing */
+    #center-processing {
+      padding: 56px 28px;
+      text-align: center;
+    }
+    .spinner {
+      width: 38px;
+      height: 38px;
+      border: 3px solid var(--surface-muted);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      margin: 0 auto 18px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #center-processing h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    #center-processing > p { color: var(--text-muted); font-size: 13px; margin-bottom: 28px; }
+    .progress-steps {
+      text-align: left;
+      display: inline-flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .prog-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      font-size: 13px;
+      color: var(--text-faint);
+      transition: color 0.2s;
+    }
+    .prog-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--border);
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .prog-item.active { color: var(--primary); font-weight: 500; }
+    .prog-item.active .prog-dot {
+      background: var(--primary);
+      animation: pulse 1s ease-in-out infinite;
+    }
+    .prog-item.done { color: var(--text-main); }
+    .prog-item.done .prog-dot { background: #22c55e; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.75); }
+    }
+
+    /* Results */
+    #center-result { display: flex; flex-direction: column; }
+    .result-topbar {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-back {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-faint);
+      padding: 5px;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-back:hover { color: var(--text-main); background: var(--surface-muted); }
+    .result-topbar-info { flex: 1; min-width: 0; }
+    .result-file-name {
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .result-file-meta { font-size: 11px; color: var(--text-faint); margin-top: 2px; }
+
+    .tabs-bar {
+      padding: 0 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 2px;
+    }
+    .tab {
+      padding: 9px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: color 0.15s;
+    }
+    .tab:hover { color: var(--text-main); }
+    .tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+
+    .tab-pane { padding: 20px; display: none; animation: fadeUp 0.18s ease; }
+    .tab-pane.active { display: block; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .result-body {
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--text-main);
+      white-space: pre-wrap;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .result-footer {
+      padding: 10px 16px;
+      border-top: 1px solid var(--border);
+      background: var(--surface-muted);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .copy-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .copy-btn:hover { background: var(--bg); color: var(--text-main); }
+    .copy-btn.copied { color: #16a34a; border-color: #16a34a; background: rgba(22,163,74,0.05); }
+    .btn-new-sm {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 7px 13px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .btn-new-sm:hover { background: var(--primary-hover); }
+
+    /* ── Statistics panel ─────────────────────────────── */
+    .stats-body { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+
+    .stat-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .stat-card {
+      background: var(--surface-muted);
+      border-radius: 10px;
+      padding: 13px 14px;
+    }
+    .stat-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-faint);
+      margin-bottom: 6px;
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: var(--text-main);
+    }
+    .stat-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .info-rows { display: flex; flex-direction: column; gap: 0; }
+    .info-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-row-key {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .info-row-val {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    /* Mode breakdown bars */
+    .mode-breakdown { display: flex; flex-direction: column; gap: 8px; }
+    .mode-bar-item { display: flex; align-items: center; gap: 8px; }
+    .mode-bar-lbl { font-size: 11px; color: var(--text-muted); width: 52px; flex-shrink: 0; }
+    .mode-bar-track {
+      flex: 1;
+      height: 5px;
+      background: var(--surface-muted);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+    .mode-bar-fill {
+      height: 100%;
+      border-radius: 100px;
+      transition: width 0.7s cubic-bezier(.16,1,.3,1);
+    }
+    .mode-bar-cnt { font-size: 11px; font-weight: 600; color: var(--text-muted); width: 18px; text-align: right; }
+
+    /* Activity chart */
+    .activity-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 52px;
+    }
+    .act-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      height: 100%;
+    }
+    .act-bar-wrap {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      align-items: flex-end;
+    }
+    .act-bar {
+      width: 100%;
+      border-radius: 3px 3px 0 0;
+      min-height: 4px;
+      background: var(--surface-muted);
+      transition: height 0.5s ease;
+    }
+    .act-bar.active { background: var(--primary); opacity: 0.75; }
+    .act-bar.active:hover { opacity: 1; }
+    .act-label {
+      font-size: 9px;
+      color: var(--text-faint);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* Section title inside stats */
+    .stats-section-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-faint);
+      margin-bottom: 10px;
+    }
+
+    /* ── Responsive ───────────────────────────────────── */
+    @media (max-width: 1100px) {
+      .dash-grid { grid-template-columns: 268px 1fr; }
+      .dash-right { display: none; }
+    }
+    @media (max-width: 720px) {
+      .dash-grid { grid-template-columns: 1fr; }
+      .dash-left { order: 2; }
+      .dash-center { order: 1; }
+      main { padding: 20px 16px 40px; }
+      .nav-email { display: none; }
+      .modes { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Auth loading overlay ──────────────── -->
+  <div id="auth-loading" style="position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;">
+    <div style="width:36px;height:36px;border:3px solid var(--surface-muted);border-top-color:var(--primary);border-radius:50%;animation:spin .75s linear infinite;"></div>
+  </div>
+
+  <!-- ── Header ────────────────────────────── -->
+  <header>
+    <a class="logo" href="/dashboard.html">
+      <i data-lucide="file-text" style="width:18px;height:18px"></i>
+      PDFClarify
+    </a>
+    <div class="nav-right" id="nav-right" style="display:none;">
+      <span id="badge-pro" class="badge-pro hidden">Pro</span>
+      <button id="btn-upgrade" class="btn-upgrade hidden">Upgrade →</button>
+      <span class="nav-email" id="nav-email"></span>
+      <button class="btn-signout" id="btn-signout">Sign out</button>
+    </div>
+  </header>
+
+  <!-- ── Main ──────────────────────────────── -->
+  <main>
+
+    <!-- Dashboard header -->
+    <div class="dash-header">
+      <div>
+        <h1 class="dash-title" id="greeting">Dashboard</h1>
+        <p class="dash-subtitle" id="dash-date"></p>
+      </div>
+      <a class="btn-analyze-top" href="/app.html">
+        <i data-lucide="plus" style="width:14px;height:14px"></i>
+        New Analysis
+      </a>
+    </div>
+
+    <div class="dash-grid">
+
+      <!-- ─────────────── LEFT: Recent Analyses ──────────────── -->
+      <div class="dash-left">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Recent Analyses</span>
+            <span class="panel-count" id="recent-count">0</span>
+          </div>
+          <div id="recent-list" class="recent-list">
+            <!-- populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ─────────────── CENTER: Upload / Processing / Results ─── -->
+      <div class="dash-center">
+        <div class="panel" id="center-panel">
+
+          <!-- Upload state -->
+          <div id="center-upload">
+            <div class="panel-header">
+              <span class="panel-title">New Analysis</span>
+              <span id="limit-hint-header" style="font-size:11px;color:var(--text-faint);">Powered by Gemini 2.0 Flash</span>
+            </div>
+            <div class="upload-body">
+
+              <div class="drop-zone" id="drop-zone">
+                <input type="file" accept=".pdf,application/pdf" id="file-input">
+                <div class="drop-icon"><i data-lucide="upload-cloud" style="width:20px;height:20px"></i></div>
+                <h3>Drop your PDF here</h3>
+                <p>or <span>browse from computer</span></p>
+                <p class="file-limit">PDF only · Max 20 MB</p>
+              </div>
+
+              <div class="file-chip" id="file-chip">
+                <div class="file-chip-icon"><i data-lucide="file-text" style="width:15px;height:15px"></i></div>
+                <div class="file-chip-info">
+                  <strong id="chip-name">—</strong>
+                  <span id="chip-size">—</span>
+                </div>
+                <button class="file-chip-remove" id="remove-file">
+                  <i data-lucide="x" style="width:13px;height:13px"></i>
+                </button>
+              </div>
+
+              <div class="section-label" style="margin-top:18px;">Analysis type</div>
+              <div class="modes">
+                <div class="mode-card selected" data-mode="summary">
+                  <div class="mode-icon" style="background:rgba(20,93,160,0.1);color:var(--primary)">
+                    <i data-lucide="list" style="width:13px;height:13px"></i>
+                  </div>
+                  <h5>Summary</h5>
+                  <p>Key points &amp; ideas</p>
+                </div>
+                <div class="mode-card" data-mode="actions">
+                  <div class="mode-icon" style="background:rgba(5,150,105,0.1);color:var(--green)">
+                    <i data-lucide="check-square" style="width:13px;height:13px"></i>
+                  </div>
+                  <h5>Action Items</h5>
+                  <p>Tasks &amp; next steps</p>
+                </div>
+                <div class="mode-card" data-mode="risks">
+                  <div class="mode-icon" style="background:rgba(220,38,38,0.1);color:var(--red)">
+                    <i data-lucide="alert-triangle" style="width:13px;height:13px"></i>
+                  </div>
+                  <h5>Key Risks</h5>
+                  <p>Issues &amp; concerns</p>
+                </div>
+              </div>
+
+              <div class="analyze-row">
+                <p class="limit-hint" id="limit-hint"></p>
+                <button class="btn-primary" id="analyze-btn" disabled>
+                  <i data-lucide="sparkles" style="width:13px;height:13px"></i>
+                  Analyze PDF
+                </button>
+              </div>
+
+              <div class="error-box" id="upload-error">
+                <i data-lucide="alert-circle" style="width:13px;height:13px;flex-shrink:0"></i>
+                <span id="upload-error-text"></span>
+              </div>
+
+            </div><!-- /upload-body -->
+          </div><!-- /center-upload -->
+
+          <!-- Processing state -->
+          <div id="center-processing" class="hidden">
+            <div class="spinner"></div>
+            <h3>Analyzing your document…</h3>
+            <p>This usually takes 15–30 seconds</p>
+            <div class="progress-steps">
+              <div class="prog-item active" id="p1"><div class="prog-dot"></div>Uploading document</div>
+              <div class="prog-item" id="p2"><div class="prog-dot"></div>Extracting text</div>
+              <div class="prog-item" id="p3"><div class="prog-dot"></div>Running AI analysis</div>
+              <div class="prog-item" id="p4"><div class="prog-dot"></div>Formatting results</div>
+            </div>
+          </div>
+
+          <!-- Results state -->
+          <div id="center-result" class="hidden">
+            <div class="result-topbar">
+              <button class="btn-back" id="btn-back" title="Back to upload">
+                <i data-lucide="arrow-left" style="width:14px;height:14px"></i>
+              </button>
+              <div class="result-topbar-info">
+                <div class="result-file-name" id="result-name">—</div>
+                <div class="result-file-meta" id="result-meta">—</div>
+              </div>
+              <span id="result-mode-badge" class="mode-badge summary">Summary</span>
+            </div>
+            <div class="tabs-bar">
+              <div class="tab active" data-tab="summary">
+                <i data-lucide="list" style="width:11px;height:11px"></i>Summary
+              </div>
+              <div class="tab" data-tab="actions">
+                <i data-lucide="check-square" style="width:11px;height:11px"></i>Actions
+              </div>
+              <div class="tab" data-tab="risks">
+                <i data-lucide="alert-triangle" style="width:11px;height:11px"></i>Risks
+              </div>
+            </div>
+            <div class="tab-pane active" id="tab-pane-summary">
+              <div class="result-body" id="body-summary"></div>
+            </div>
+            <div class="tab-pane" id="tab-pane-actions">
+              <div class="result-body" id="body-actions"></div>
+            </div>
+            <div class="tab-pane" id="tab-pane-risks">
+              <div class="result-body" id="body-risks"></div>
+            </div>
+            <div class="result-footer">
+              <button class="copy-btn" id="copy-btn">
+                <i data-lucide="copy" style="width:11px;height:11px"></i>Copy
+              </button>
+              <div style="flex:1"></div>
+              <button class="btn-new-sm" id="btn-new-analysis">
+                <i data-lucide="plus" style="width:11px;height:11px"></i>New
+              </button>
+            </div>
+          </div><!-- /center-result -->
+
+        </div><!-- /panel -->
+      </div><!-- /dash-center -->
+
+      <!-- ─────────────── RIGHT: Statistics ──────────────────── -->
+      <div class="dash-right">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Statistics</span>
+          </div>
+          <div class="stats-body">
+
+            <!-- Big numbers -->
+            <div class="stat-cards">
+              <div class="stat-card">
+                <div class="stat-label">Total PDFs</div>
+                <div class="stat-value" id="stat-total">—</div>
+                <div class="stat-sub" id="stat-month-sub">this month: —</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Pages Read</div>
+                <div class="stat-value" id="stat-pages">—</div>
+                <div class="stat-sub">all time</div>
+              </div>
+            </div>
+
+            <!-- Info rows -->
+            <div class="info-rows">
+              <div class="info-row">
+                <span class="info-row-key">
+                  <i data-lucide="calendar" style="width:12px;height:12px"></i>This week
+                </span>
+                <span class="info-row-val" id="stat-week">—</span>
+              </div>
+              <div class="info-row">
+                <span class="info-row-key">
+                  <i data-lucide="zap" style="width:12px;height:12px"></i>Plan
+                </span>
+                <span class="info-row-val" id="stat-plan">Free</span>
+              </div>
+              <div class="info-row">
+                <span class="info-row-key">
+                  <i data-lucide="user" style="width:12px;height:12px"></i>Member since
+                </span>
+                <span class="info-row-val" id="stat-since">—</span>
+              </div>
+            </div>
+
+            <!-- Mode breakdown -->
+            <div>
+              <div class="stats-section-title">Analysis types</div>
+              <div class="mode-breakdown" id="mode-breakdown">
+                <!-- populated by JS -->
+              </div>
+            </div>
+
+            <!-- 7-day activity chart -->
+            <div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <div class="stats-section-title" style="margin-bottom:0;">Last 7 days</div>
+                <span id="stat-week-label" style="font-size:10px;color:var(--text-faint);"></span>
+              </div>
+              <div class="activity-chart" id="activity-chart">
+                <!-- populated by JS -->
+              </div>
+            </div>
+
+          </div><!-- /stats-body -->
+        </div><!-- /panel -->
+      </div><!-- /dash-right -->
+
+    </div><!-- /dash-grid -->
+  </main>
+
+  <!-- Welcome toast -->
+  <div id="welcome-toast" class="hidden" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:500;z-index:600;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,0.2);white-space:nowrap;">
+    <i data-lucide="check-circle" style="width:15px;height:15px;color:#22c55e"></i>
+    Welcome to PDFClarify! Your account is ready.
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    // ── State ─────────────────────────────────────────────
+    let currentUser   = null;
+    let selectedFile  = null;
+    let selectedMode  = 'summary';
+    let resultData    = null;
+    let progressTimer = null;
+    const FREE_LIMIT  = 3;
+    const TRIAL_KEY   = 'pdfclarify_trial';
+
+    // Map of docId → doc data for quick lookup when clicking recent items
+    const recentMap = {};
+
+    // ── Elements ──────────────────────────────────────────
+    const analyzeBtn     = document.getElementById('analyze-btn');
+    const dropZone       = document.getElementById('drop-zone');
+    const fileInput      = document.getElementById('file-input');
+    const fileChip       = document.getElementById('file-chip');
+    const chipName       = document.getElementById('chip-name');
+    const chipSize       = document.getElementById('chip-size');
+    const removeFileBtn  = document.getElementById('remove-file');
+    const limitHint      = document.getElementById('limit-hint');
+    const uploadError    = document.getElementById('upload-error');
+    const uploadErrorTxt = document.getElementById('upload-error-text');
+    const centerUpload   = document.getElementById('center-upload');
+    const centerProc     = document.getElementById('center-processing');
+    const centerResult   = document.getElementById('center-result');
+    const progItems      = ['p1','p2','p3','p4'].map(id => document.getElementById(id));
+
+    // ── Auth ───────────────────────────────────────────────
+    async function checkAuth() {
+      try {
+        const res  = await fetch('/api/auth/me');
+        const data = await res.json();
+        if (!data.user) { window.location.href = '/login.html'; return; }
+        currentUser = data.user;
+        renderNav();
+        loadDashboard();
+        // Welcome toast after coming from guest registration
+        if (localStorage.getItem(TRIAL_KEY) === 'used') {
+          localStorage.removeItem(TRIAL_KEY);
+          const toast = document.getElementById('welcome-toast');
+          toast.classList.remove('hidden');
+          setTimeout(() => toast.classList.add('hidden'), 5000);
+        }
+      } catch {
+        window.location.href = '/login.html';
+      } finally {
+        document.getElementById('auth-loading').style.display = 'none';
+        document.getElementById('nav-right').style.display    = 'flex';
+      }
+    }
+
+    function renderNav() {
+      const u = currentUser;
+      const hour = new Date().getHours();
+      const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+      const name  = u.email.split('@')[0];
+      document.getElementById('greeting').textContent  = `${greet}, ${name} 👋`;
+      document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-US', {
+        weekday: 'long', month: 'long', day: 'numeric'
+      });
+      document.getElementById('nav-email').textContent = u.email;
+      if (u.plan === 'pro') {
+        document.getElementById('badge-pro').classList.remove('hidden');
+        limitHint.textContent = 'Pro · unlimited analyses';
+      } else {
+        const left = Math.max(0, FREE_LIMIT - (u.docs_used || 0));
+        limitHint.textContent = `${left} of ${FREE_LIMIT} free analyses remaining`;
+        document.getElementById('btn-upgrade').classList.remove('hidden');
+      }
+      document.getElementById('stat-plan').textContent = u.plan === 'pro' ? 'Pro ✦' : 'Free';
+    }
+
+    document.getElementById('btn-signout').addEventListener('click', async () => {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.href = '/login.html';
+    });
+
+    // ── Load dashboard data ────────────────────────────────
+    async function loadDashboard() {
+      try {
+        const res  = await fetch('/api/dashboard');
+        const data = await res.json();
+        if (!res.ok) {
+          // Gracefully fall back to just user data
+          renderRecent([]);
+          renderStats(null, [], []);
+          renderMemberSince(null);
+          return;
+        }
+        renderRecent(data.recent   || []);
+        renderStats(data.stats, data.modes || [], data.activity || []);
+        renderMemberSince(data.user?.created_at);
+      } catch {
+        renderRecent([]);
+        renderStats(null, [], []);
+      }
+    }
+
+    // ── Recent PDFs ────────────────────────────────────────
+    function renderRecent(items) {
+      const list = document.getElementById('recent-list');
+      document.getElementById('recent-count').textContent = items.length;
+
+      if (!items.length) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon"><i data-lucide="file-search" style="width:20px;height:20px"></i></div>
+            <h4>No analyses yet</h4>
+            <p>Upload your first PDF above.<br>Results will appear here automatically.</p>
+          </div>`;
+        lucide.createIcons();
+        return;
+      }
+
+      // Store in map for quick lookup
+      items.forEach(doc => { recentMap[doc.id] = doc; });
+
+      list.innerHTML = items.map(doc => `
+        <div class="recent-item" data-id="${escHtml(doc.id)}" onclick="openDoc('${escHtml(doc.id)}')">
+          <div class="recent-icon">
+            <i data-lucide="file-text" style="width:14px;height:14px"></i>
+          </div>
+          <div class="recent-info">
+            <div class="recent-name">${escHtml(doc.filename)}</div>
+            <div class="recent-meta">
+              ${doc.mode ? `<span class="mode-badge ${escHtml(doc.mode)}">${modeLabel(doc.mode)}</span>` : ''}
+              <span>${timeAgo(doc.created_at)}</span>
+              ${doc.page_count ? `<span>· ${doc.page_count}p</span>` : ''}
+            </div>
+          </div>
+          <div class="recent-chevron">
+            <i data-lucide="chevron-right" style="width:12px;height:12px"></i>
+          </div>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function openDoc(id) {
+      const doc = recentMap[id];
+      if (!doc) return;
+
+      // Highlight active
+      document.querySelectorAll('.recent-item').forEach(el => el.classList.remove('active'));
+      const el = document.querySelector(`.recent-item[data-id="${id}"]`);
+      if (el) el.classList.add('active');
+
+      // Parse result
+      if (doc.result) {
+        try {
+          resultData = typeof doc.result === 'string' ? JSON.parse(doc.result) : doc.result;
+        } catch {
+          resultData = { summary: doc.result, actions: '', risks: '' };
+        }
+      } else {
+        resultData = {
+          summary: 'No detailed result stored for this document.',
+          actions: '',
+          risks:   ''
+        };
+      }
+
+      showResult(doc.filename, doc.mode || 'summary', doc.created_at);
+    }
+
+    // ── Statistics ─────────────────────────────────────────
+    function renderStats(stats, modes, activity) {
+      const total = stats?.total_docs ?? currentUser?.docs_used ?? 0;
+      const pages = stats?.total_pages  ?? 0;
+      const week  = stats?.this_week    ?? 0;
+      const month = stats?.this_month   ?? 0;
+
+      // Animate count-up for the big numbers
+      animateCount('stat-total', total);
+      animateCount('stat-pages', pages);
+      document.getElementById('stat-week').textContent      = `${week} PDF${week !== 1 ? 's' : ''}`;
+      document.getElementById('stat-month-sub').textContent = `this month: ${month}`;
+
+      // Mode breakdown bars
+      const modeEl  = document.getElementById('mode-breakdown');
+      const modeMap = Object.fromEntries(modes.map(m => [m.mode, m.cnt]));
+      const maxCnt  = Math.max(1, ...modes.map(m => m.cnt));
+      const modeConfig = [
+        { key: 'summary', label: 'Summary', color: 'var(--primary)' },
+        { key: 'actions', label: 'Actions', color: 'var(--green)'   },
+        { key: 'risks',   label: 'Risks',   color: 'var(--red)'    },
+      ];
+      modeEl.innerHTML = modeConfig.map(m => `
+        <div class="mode-bar-item">
+          <span class="mode-bar-lbl">${m.label}</span>
+          <div class="mode-bar-track">
+            <div class="mode-bar-fill"
+                 style="width:${((modeMap[m.key] || 0) / maxCnt) * 100}%;background:${m.color}">
+            </div>
+          </div>
+          <span class="mode-bar-cnt">${modeMap[m.key] || 0}</span>
+        </div>
+      `).join('');
+
+      renderActivityChart(activity);
+    }
+
+    function animateCount(id, target) {
+      const el = document.getElementById(id);
+      if (target === 0) { el.textContent = '0'; return; }
+      let cur = 0;
+      const step = Math.ceil(target / 20);
+      const timer = setInterval(() => {
+        cur = Math.min(cur + step, target);
+        el.textContent = cur;
+        if (cur >= target) clearInterval(timer);
+      }, 40);
+    }
+
+    function renderActivityChart(activity) {
+      const chart = document.getElementById('activity-chart');
+      const days = [];
+      for (let i = 6; i >= 0; i--) {
+        const d   = new Date();
+        d.setDate(d.getDate() - i);
+        const key = d.toISOString().slice(0, 10);
+        const lbl = d.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 2);
+        const cnt = activity.find(a => a.day === key)?.cnt || 0;
+        days.push({ key, lbl, cnt });
+      }
+      const maxCnt = Math.max(1, ...days.map(d => d.cnt));
+      const total7 = days.reduce((s, d) => s + d.cnt, 0);
+      document.getElementById('stat-week-label').textContent = `${total7} total`;
+
+      chart.innerHTML = days.map(d => `
+        <div class="act-col">
+          <div class="act-bar-wrap">
+            <div class="act-bar ${d.cnt > 0 ? 'active' : ''}"
+                 style="height:${Math.max(6, (d.cnt / maxCnt) * 100)}%"
+                 title="${d.cnt} PDF${d.cnt !== 1 ? 's' : ''} on ${d.key}"></div>
+          </div>
+          <div class="act-label">${d.lbl}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderMemberSince(ts) {
+      if (!ts) { document.getElementById('stat-since').textContent = '—'; return; }
+      const d = new Date(ts * 1000);
+      document.getElementById('stat-since').textContent =
+        d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    }
+
+    // ── Upload / File handling ─────────────────────────────
+    function formatBytes(b) {
+      return b > 1024 * 1024
+        ? (b / (1024 * 1024)).toFixed(1) + ' MB'
+        : (b / 1024).toFixed(0) + ' KB';
+    }
+
+    function canProcess() {
+      if (!currentUser) return false;
+      if (currentUser.plan === 'pro') return true;
+      return (currentUser.docs_used || 0) < FREE_LIMIT;
+    }
+
+    function setFile(f) {
+      if (!f) return;
+      if (f.type !== 'application/pdf' && !f.name.toLowerCase().endsWith('.pdf')) {
+        showErr('Only PDF files are supported.'); return;
+      }
+      if (f.size > 20 * 1024 * 1024) {
+        showErr('File must be under 20 MB.'); return;
+      }
+      hideErr();
+      selectedFile = f;
+      chipName.textContent = f.name;
+      chipSize.textContent = formatBytes(f.size);
+      fileChip.classList.add('visible');
+      dropZone.style.display = 'none';
+      analyzeBtn.disabled = !canProcess();
+    }
+
+    function clearFile() {
+      selectedFile = null;
+      fileInput.value = '';
+      fileChip.classList.remove('visible');
+      dropZone.style.display = '';
+      analyzeBtn.disabled = true;
+      hideErr();
+    }
+
+    function showErr(msg) { uploadErrorTxt.textContent = msg; uploadError.classList.add('visible'); }
+    function hideErr() { uploadError.classList.remove('visible'); }
+
+    fileInput.addEventListener('change', e => setFile(e.target.files?.[0] ?? null));
+    removeFileBtn.addEventListener('click', clearFile);
+
+    dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', ()  => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault(); dropZone.classList.remove('drag-over');
+      setFile(e.dataTransfer.files[0] ?? null);
+    });
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    document.querySelectorAll('.mode-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        selectedMode = card.dataset.mode;
+      });
+    });
+
+    // ── Analyze ────────────────────────────────────────────
+    analyzeBtn.addEventListener('click', async () => {
+      if (!selectedFile || !canProcess()) return;
+      hideErr();
+      showState('processing');
+      startProgress();
+
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('mode', selectedMode);
+
+      try {
+        const res  = await fetch('/api/process', { method: 'POST', body: formData });
+        const data = await res.json();
+        clearProgress();
+
+        if (!res.ok) {
+          showState('upload');
+          showErr(data.error || 'Processing failed — please try again.');
+          return;
+        }
+
+        resultData = data.result;
+        showResult(selectedFile.name, selectedMode, Date.now() / 1000);
+
+        // Refresh limits + reload recent list
+        fetch('/api/auth/me').then(r => r.json()).then(d => {
+          if (d.user) { currentUser = d.user; renderNav(); }
+        });
+        loadDashboard();
+
+      } catch {
+        clearProgress();
+        showState('upload');
+        showErr('Connection error — please try again.');
+      }
+    });
+
+    // ── State transitions ──────────────────────────────────
+    function showState(state) {
+      centerUpload.classList.toggle('hidden', state !== 'upload');
+      centerProc.classList.toggle('hidden',   state !== 'processing');
+      centerResult.classList.toggle('hidden', state !== 'result');
+    }
+
+    function showResult(filename, mode, ts) {
+      document.getElementById('result-name').textContent = filename;
+      document.getElementById('result-meta').textContent =
+        `${modeLabel(mode)} · ${timeAgo(ts)}`;
+
+      const badge = document.getElementById('result-mode-badge');
+      badge.textContent = modeLabel(mode);
+      badge.className   = `mode-badge ${mode}`;
+
+      document.getElementById('body-summary').textContent = resultData?.summary || '—';
+      document.getElementById('body-actions').textContent = resultData?.actions || '—';
+      document.getElementById('body-risks').textContent   = resultData?.risks   || '—';
+
+      // Switch to the tab matching the analysis mode
+      setActiveTab(mode === 'summary' || mode === 'actions' || mode === 'risks' ? mode : 'summary');
+
+      showState('result');
+    }
+
+    // ── Tabs ───────────────────────────────────────────────
+    function setActiveTab(tabKey) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      const tab  = document.querySelector(`.tab[data-tab="${tabKey}"]`);
+      const pane = document.getElementById(`tab-pane-${tabKey}`);
+      if (tab)  tab.classList.add('active');
+      if (pane) pane.classList.add('active');
+    }
+
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => setActiveTab(tab.dataset.tab));
+    });
+
+    // ── Back / New buttons ─────────────────────────────────
+    document.getElementById('btn-back').addEventListener('click', () => {
+      document.querySelectorAll('.recent-item').forEach(el => el.classList.remove('active'));
+      clearFile();
+      showState('upload');
+    });
+    document.getElementById('btn-new-analysis').addEventListener('click', () => {
+      document.querySelectorAll('.recent-item').forEach(el => el.classList.remove('active'));
+      clearFile();
+      showState('upload');
+    });
+
+    // ── Copy button ────────────────────────────────────────
+    document.getElementById('copy-btn').addEventListener('click', () => {
+      const body = document.querySelector('.tab-pane.active .result-body');
+      if (!body || !body.textContent.trim()) return;
+      navigator.clipboard.writeText(body.textContent).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.classList.add('copied');
+        btn.innerHTML = '<i data-lucide="check" style="width:11px;height:11px"></i>Copied!';
+        lucide.createIcons();
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = '<i data-lucide="copy" style="width:11px;height:11px"></i>Copy';
+          lucide.createIcons();
+        }, 2000);
+      });
+    });
+
+    // ── Progress animation ─────────────────────────────────
+    let progIdx = 0;
+    function startProgress() {
+      progIdx = 0;
+      progItems.forEach(el => el.classList.remove('active', 'done'));
+      progItems[0].classList.add('active');
+      progressTimer = setInterval(() => {
+        progItems[progIdx].classList.remove('active');
+        progItems[progIdx].classList.add('done');
+        progIdx = Math.min(progIdx + 1, progItems.length - 1);
+        progItems[progIdx].classList.add('active');
+      }, 1800);
+    }
+    function clearProgress() {
+      clearInterval(progressTimer);
+      progItems.forEach(el => el.classList.remove('active', 'done'));
+    }
+
+    // ── Helpers ────────────────────────────────────────────
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g,  '&amp;')
+        .replace(/</g,  '&lt;')
+        .replace(/>/g,  '&gt;')
+        .replace(/"/g,  '&quot;');
+    }
+    function modeLabel(mode) {
+      return { summary: 'Summary', actions: 'Actions', risks: 'Risks' }[mode] || mode;
+    }
+    function timeAgo(ts) {
+      if (!ts) return '';
+      if (ts > 1e10) ts = ts / 1000; // handle ms timestamps
+      const sec = Math.floor(Date.now() / 1000 - ts);
+      if (sec < 60)    return 'just now';
+      if (sec < 3600)  return `${Math.floor(sec / 60)}m ago`;
+      if (sec < 86400) return `${Math.floor(sec / 3600)}h ago`;
+      return new Date(ts * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    // ── Boot ───────────────────────────────────────────────
+    checkAuth();
+  </script>
+</body>
+</html>
