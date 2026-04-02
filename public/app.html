@@ -630,7 +630,7 @@
         </div>
 
         <div class="actions-row">
-          <p class="limit-hint" id="limit-hint">Powered by Gemini 2.0 Flash</p>
+          <p class="limit-hint" id="limit-hint">Powered by Gemini 2.0 Flash Lite</p>
           <button class="btn-primary" id="analyze-btn" disabled>
             <i data-lucide="sparkles" style="width:14px;height:14px"></i>
             Analyze PDF
@@ -649,7 +649,7 @@
     <div id="processing-step" class="hidden">
       <div class="spinner"></div>
       <h3>Analyzing your document…</h3>
-      <p>Gemini 2.0 Flash is reading and processing your PDF</p>
+      <p>Gemini 2.0 Flash Lite is reading and processing your PDF</p>
       <div class="progress-steps">
         <div class="prog-item active" id="p1"><div class="prog-dot"></div> Uploading PDF…</div>
         <div class="prog-item"        id="p2"><div class="prog-dot"></div> Reading document…</div>
@@ -715,7 +715,7 @@
         </div>
 
         <div class="results-footer">
-          <span style="font-size:12px;color:var(--text-faint);">Generated with Gemini 2.0 Flash</span>
+          <span style="font-size:12px;color:var(--text-faint);">Generated with Gemini 2.0 Flash Lite</span>
           <div class="spacer"></div>
           <button class="btn-secondary" id="new-analysis-btn">
             <i data-lucide="plus" style="width:14px;height:14px"></i> New analysis
@@ -878,7 +878,7 @@
       }
       if (!currentUser) return;
       if (currentUser.plan === 'pro') {
-        limitHint.innerHTML = 'Powered by Gemini 2.0 Flash';
+        limitHint.innerHTML = 'Powered by Gemini 2.0 Flash Lite';
         return;
       }
       const left = FREE_LIMIT - (currentUser.docs_used || 0);
