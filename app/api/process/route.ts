@@ -180,10 +180,38 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const uploadData = await uploadRes.json() as { file?: { uri?: string } };
+    const uploadData = await uploadRes.json() as {
+      file?: { uri?: string; name?: string; state?: string };
+    };
     fileUri = uploadData?.file?.uri ?? "";
+    const fileName = uploadData?.file?.name ?? "";
     if (!fileUri) {
       return NextResponse.json({ error: "No file URI returned from AI service" }, { status: 502 });
+    }
+
+    // ── Poll until file state is ACTIVE (Gemini processes it asynchronously) ──
+    if (uploadData?.file?.state === "PROCESSING" && fileName) {
+      let attempts = 0;
+      const maxAttempts = 15; // up to ~15s
+      while (attempts < maxAttempts) {
+        await new Promise(r => setTimeout(r, 1000));
+        attempts++;
+        try {
+          const statusRes = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/${fileName}?key=${apiKey}`
+          );
+          if (statusRes.ok) {
+            const statusData = await statusRes.json() as { state?: string };
+            if (statusData.state === "ACTIVE") break;
+            if (statusData.state === "FAILED") {
+              return NextResponse.json(
+                { error: "AI service failed to process the PDF — please try again" },
+                { status: 502 }
+              );
+            }
+          }
+        } catch { /* keep polling */ }
+      }
     }
   } catch (err) {
     console.error("Upload error:", err);
@@ -212,7 +240,7 @@ export async function POST(req: NextRequest) {
           generationConfig: {
             temperature:     0.3,
             maxOutputTokens: 4096,
-            responseMimeType: "application/json",
+
           },
         }),
       }
@@ -222,14 +250,29 @@ export async function POST(req: NextRequest) {
       const errBody = await genRes.text().catch(() => "");
       console.error("Gemini generateContent failed:", genRes.status, errBody);
 
-      // Surface quota/rate-limit errors clearly
+      // Try to extract a human-readable message from Gemini's error body
+      let geminiMsg = "";
+      try {
+        const errJson = JSON.parse(errBody);
+        geminiMsg = errJson?.error?.message ?? "";
+      } catch { /* ignore */ }
+
       if (genRes.status === 429) {
         return NextResponse.json(
-          { error: "AI service rate limit reached — please wait a moment and try again" },
+          { error: "AI rate limit reached — please wait a moment and try again" },
           { status: 429 }
         );
       }
-      return NextResponse.json({ error: "AI analysis failed — please try again" }, { status: 502 });
+      if (genRes.status === 400) {
+        return NextResponse.json(
+          { error: geminiMsg || "AI rejected the request — the PDF may be encrypted or corrupted" },
+          { status: 400 }
+        );
+      }
+      return NextResponse.json(
+        { error: geminiMsg || "AI analysis failed — please try again" },
+        { status: 502 }
+      );
     }
 
     const genData = await genRes.json() as {
