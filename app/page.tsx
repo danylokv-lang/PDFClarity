@@ -1,3 +1,7 @@
+import { redirect } from "next/navigation";
+
+export const runtime = "edge";
+
 export default function Home() {
-  return null;
+  redirect("/index.html");
 }
