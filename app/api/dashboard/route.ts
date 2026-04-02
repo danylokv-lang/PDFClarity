@@ -21,9 +21,9 @@ export async function GET(req: NextRequest) {
   }
 
   const user = await env.DB.prepare(
-    `SELECT id, email, plan, docs_used, created_at FROM users WHERE id = ?`
+    `SELECT id, email, plan, created_at FROM users WHERE id = ?`
   ).bind(userId).first<{
-    id: string; email: string; plan: string; docs_used: number; created_at: number;
+    id: string; email: string; plan: string; created_at: number;
   }>();
 
   if (!user) {

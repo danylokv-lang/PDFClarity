@@ -474,7 +474,64 @@
       font-size: 11px; font-weight: 700; text-transform: uppercase;
       letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 16px;
     }
-    .result-body { font-size: 14px; line-height: 1.8; color: var(--text-main); white-space: pre-wrap; }
+    .result-body { font-size: 14.5px; line-height: 1.85; color: var(--text-main); padding: 0; letter-spacing: -0.01em; }
+    .result-body p { margin: 0 0 16px; }
+    .result-body p:last-child { margin-bottom: 0; }
+    .result-body ul { list-style: none; padding: 0; margin: 0 0 16px; display: flex; flex-direction: column; gap: 10px; }
+    .result-body ul:last-child { margin-bottom: 0; }
+    .result-body li {
+      position: relative; padding: 12px 16px 12px 38px;
+      background: var(--surface-muted); border: 1px solid var(--border);
+      border-radius: 10px; font-size: 14px; line-height: 1.75;
+    }
+    .result-body li::before {
+      content: ''; position: absolute; left: 14px; top: 17px;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--primary); flex-shrink: 0;
+    }
+    .result-body .severity-tag {
+      display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+      text-transform: uppercase; padding: 2px 7px; border-radius: 4px; margin-right: 6px;
+      vertical-align: middle;
+    }
+    .result-body .severity-tag.high   { background: rgba(239,68,68,0.1);  color: #dc2626; }
+    .result-body .severity-tag.medium { background: rgba(245,158,11,0.1); color: #d97706; }
+    .result-body .severity-tag.low    { background: rgba(34,197,94,0.1);  color: #16a34a; }
+    .result-body .owner-tag {
+      display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+      text-transform: uppercase; padding: 2px 7px; border-radius: 4px; margin-right: 6px;
+      background: rgba(20,93,160,0.08); color: var(--primary); vertical-align: middle;
+    }
+    .result-body .explain-term {
+      border-bottom: 1.5px dashed rgba(20,93,160,0.35); cursor: help;
+      color: inherit; transition: border-color 0.15s, color 0.15s;
+      border-radius: 1px;
+    }
+    .result-body .explain-term:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* Explain tooltip */
+    .explain-tooltip {
+      position: fixed; z-index: 9999;
+      max-width: 320px; padding: 14px 16px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+      font-size: 13px; line-height: 1.65; color: var(--text-main);
+      animation: tooltipIn 0.15s ease;
+    }
+    .explain-tooltip .tt-word {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--primary); margin-bottom: 6px;
+    }
+    .explain-tooltip .tt-loading {
+      display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 12px;
+    }
+    .explain-tooltip .tt-loading::before {
+      content: ''; width: 14px; height: 14px; border: 2px solid var(--border);
+      border-top-color: var(--primary); border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes tooltipIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
     /* Results footer */
     .results-footer {
@@ -630,7 +687,7 @@
         </div>
 
         <div class="actions-row">
-          <p class="limit-hint" id="limit-hint">Powered by Gemini 2.0 Flash Lite</p>
+          <p class="limit-hint" id="limit-hint">Powered by Gemini 2.5 Flash</p>
           <button class="btn-primary" id="analyze-btn" disabled>
             <i data-lucide="sparkles" style="width:14px;height:14px"></i>
             Analyze PDF
@@ -649,7 +706,7 @@
     <div id="processing-step" class="hidden">
       <div class="spinner"></div>
       <h3>Analyzing your document…</h3>
-      <p>Gemini 2.0 Flash Lite is reading and processing your PDF</p>
+      <p>Gemini 2.5 Flash is reading and processing your PDF</p>
       <div class="progress-steps">
         <div class="prog-item active" id="p1"><div class="prog-dot"></div> Uploading PDF…</div>
         <div class="prog-item"        id="p2"><div class="prog-dot"></div> Reading document…</div>
@@ -715,7 +772,7 @@
         </div>
 
         <div class="results-footer">
-          <span style="font-size:12px;color:var(--text-faint);">Generated with Gemini 2.0 Flash Lite</span>
+          <span style="font-size:12px;color:var(--text-faint);">Generated with Gemini 2.5 Flash</span>
           <div class="spacer"></div>
           <button class="btn-secondary" id="new-analysis-btn">
             <i data-lucide="plus" style="width:14px;height:14px"></i> New analysis
@@ -860,7 +917,7 @@
         badgePro.classList.remove('hidden');
       } else {
         const left = FREE_LIMIT - (u.docs_used || 0);
-        docCounter.textContent = `${left} of ${FREE_LIMIT} free docs left`;
+        docCounter.textContent = `${left} of ${FREE_LIMIT} free docs left this week`;
         docCounter.classList.toggle('warning', left === 0);
         docCounter.classList.remove('hidden');
         btnUpgrade.classList.remove('hidden');
@@ -878,12 +935,12 @@
       }
       if (!currentUser) return;
       if (currentUser.plan === 'pro') {
-        limitHint.innerHTML = 'Powered by Gemini 2.0 Flash Lite';
+        limitHint.innerHTML = 'Powered by Gemini 2.5 Flash';
         return;
       }
       const left = FREE_LIMIT - (currentUser.docs_used || 0);
       if (left <= 0) {
-        limitHint.innerHTML = `You've used all free docs — <a onclick="alert('Upgrade coming soon!')">upgrade to continue</a>`;
+        limitHint.innerHTML = `You've used all free docs this week — <a onclick="alert('Upgrade coming soon!')">upgrade to continue</a>`;
         analyzeBtn.disabled = true;
       }
     }
@@ -950,8 +1007,6 @@
       dropZone.classList.remove('drag-over');
       setFile(e.dataTransfer.files[0] ?? null);
     });
-    dropZone.addEventListener('click', () => fileInput.click());
-
     // ── Language selector ─────────────────────────────────────────────────────
     const langSelect = document.getElementById('lang-select');
     const langCustom = document.getElementById('lang-custom');
@@ -1072,6 +1127,137 @@
       progItems.forEach(el => { el.classList.remove('active', 'done'); });
     }
 
+    // ── Format AI output as rich HTML ─────────────────────────────────────────
+    function escapeHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function markTerms(text) {
+      // Convert {{term}} → clickable span
+      return text.replace(/\{\{(.+?)\}\}/g, '<span class="explain-term" data-term="$1">$1</span>');
+    }
+
+    function formatResultText(raw, type) {
+      if (!raw || !raw.trim()) return '';
+      const normalized = raw.replace(/[.,;]?\s*•/g, '\n•').replace(/\n{3,}/g, '\n\n');
+      const lines = normalized.split('\n');
+      let html = '';
+      let inList = false;
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) {
+          if (inList) { html += '</ul>'; inList = false; }
+          continue;
+        }
+
+        const bulletMatch = trimmed.match(/^[•\-\*]\s*(.*)/);
+        if (bulletMatch) {
+          if (!inList) { html += '<ul>'; inList = true; }
+          let content = escapeHtml(bulletMatch[1]);
+
+          if (type === 'risks') {
+            content = content.replace(
+              /\[(High|Medium|Low)\]/i,
+              (_, s) => `<span class="severity-tag ${s.toLowerCase()}">${s}</span>`
+            );
+            content = content.replace(
+              /\b(Severity:\s*)(High|Medium|Low)\b/i,
+              (_, pre, s) => `<span class="severity-tag ${s.toLowerCase()}">${s}</span>`
+            );
+          }
+
+          if (type === 'actions') {
+            content = content.replace(
+              /^\[([^\]]+)\]/,
+              (_, o) => `<span class="owner-tag">${escapeHtml(o)}</span>`
+            );
+          }
+
+          content = content.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+          content = content.replace(/ — /g, ' <span style="color:var(--text-faint)">—</span> ');
+          content = markTerms(content);
+
+          html += `<li>${content}</li>`;
+          continue;
+        }
+
+        if (inList) { html += '</ul>'; inList = false; }
+        let text = escapeHtml(trimmed);
+        text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        text = markTerms(text);
+        html += `<p>${text}</p>`;
+      }
+      if (inList) html += '</ul>';
+      return html;
+    }
+
+    // ── Explain tooltip ───────────────────────────────────────────────────────
+    let activeTooltip = null;
+    const explainCache = {};
+
+    function closeTooltip() {
+      if (activeTooltip) { activeTooltip.remove(); activeTooltip = null; }
+    }
+
+    document.addEventListener('click', (e) => {
+      const term = e.target.closest('.explain-term');
+      if (!term) { closeTooltip(); return; }
+
+      e.preventDefault();
+      closeTooltip();
+
+      const word = term.dataset.term;
+      if (!word) return;
+
+      // Get surrounding sentence for context
+      const parentText = term.closest('.result-body')?.textContent ?? '';
+      const idx = parentText.indexOf(word);
+      const context = parentText.slice(Math.max(0, idx - 80), idx + word.length + 80).trim();
+
+      const rect = term.getBoundingClientRect();
+      const tt = document.createElement('div');
+      tt.className = 'explain-tooltip';
+      tt.innerHTML = `<div class="tt-word">${escapeHtml(word)}</div><div class="tt-loading">Explaining…</div>`;
+
+      // Position
+      let top = rect.bottom + 8;
+      let left = rect.left;
+      if (top + 120 > window.innerHeight) top = rect.top - 120;
+      if (left + 320 > window.innerWidth) left = window.innerWidth - 330;
+      tt.style.top = top + 'px';
+      tt.style.left = Math.max(10, left) + 'px';
+
+      document.body.appendChild(tt);
+      activeTooltip = tt;
+
+      // Check cache
+      const lang = localStorage.getItem('pdfclarify_lang') || 'English';
+      const cacheKey = `${word}|${lang}`;
+      if (explainCache[cacheKey]) {
+        tt.innerHTML = `<div class="tt-word">${escapeHtml(word)}</div><div>${escapeHtml(explainCache[cacheKey])}</div>`;
+        return;
+      }
+
+      // Fetch explanation
+      fetch('/api/explain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ word, context, language: lang }),
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (!activeTooltip) return;
+        const text = data.explanation || 'No explanation available.';
+        explainCache[cacheKey] = text;
+        tt.innerHTML = `<div class="tt-word">${escapeHtml(word)}</div><div>${escapeHtml(text)}</div>`;
+      })
+      .catch(() => {
+        if (!activeTooltip) return;
+        tt.innerHTML = `<div class="tt-word">${escapeHtml(word)}</div><div style="color:var(--text-muted)">Could not load explanation.</div>`;
+      });
+    });
+
     // ── Show results ──────────────────────────────────────────────────────────
     function showResults() {
       const modeLabel = { summary: 'Summary', actions: 'Action Items', risks: 'Key Risks' };
@@ -1084,9 +1270,9 @@
         resTimeRow.style.display = 'flex';
       }
 
-      bodySummary.textContent = resultData?.summary || '(No summary data)';
-      bodyActions.textContent = resultData?.actions || '(No action items)';
-      bodyRisks.textContent   = resultData?.risks   || '(No risk data)';
+      bodySummary.innerHTML = formatResultText(resultData?.summary, 'summary') || '<p style="color:var(--text-faint)">(No summary data)</p>';
+      bodyActions.innerHTML = formatResultText(resultData?.actions, 'actions') || '<p style="color:var(--text-faint)">(No action items)</p>';
+      bodyRisks.innerHTML   = formatResultText(resultData?.risks,   'risks')  || '<p style="color:var(--text-faint)">(No risk data)</p>';
 
       // Activate the tab matching the analysis mode
       switchTab(selectedMode);

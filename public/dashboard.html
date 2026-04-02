@@ -577,13 +577,71 @@
       to   { opacity: 1; transform: translateY(0); }
     }
     .result-body {
-      font-size: 13px;
+      font-size: 13.5px;
       line-height: 1.8;
       color: var(--text-main);
-      white-space: pre-wrap;
       max-height: 400px;
       overflow-y: auto;
+      padding: 0;
+      letter-spacing: -0.01em;
     }
+    .result-body p { margin: 0 0 14px; }
+    .result-body p:last-child { margin-bottom: 0; }
+    .result-body ul { list-style: none; padding: 0; margin: 0 0 14px; display: flex; flex-direction: column; gap: 8px; }
+    .result-body ul:last-child { margin-bottom: 0; }
+    .result-body li {
+      position: relative; padding: 10px 14px 10px 32px;
+      background: var(--surface-muted); border: 1px solid var(--border);
+      border-radius: 8px; font-size: 13px; line-height: 1.75;
+    }
+    .result-body li::before {
+      content: ''; position: absolute; left: 12px; top: 14px;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--primary);
+    }
+    .result-body .severity-tag {
+      display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 0.04em;
+      text-transform: uppercase; padding: 1px 6px; border-radius: 3px; margin-right: 4px;
+      vertical-align: middle;
+    }
+    .result-body .severity-tag.high   { background: rgba(239,68,68,0.1);  color: #dc2626; }
+    .result-body .severity-tag.medium { background: rgba(245,158,11,0.1); color: #d97706; }
+    .result-body .severity-tag.low    { background: rgba(34,197,94,0.1);  color: #16a34a; }
+    .result-body .owner-tag {
+      display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 0.04em;
+      text-transform: uppercase; padding: 1px 6px; border-radius: 3px; margin-right: 4px;
+      background: rgba(20,93,160,0.08); color: var(--primary); vertical-align: middle;
+    }
+    .result-body .explain-term {
+      border-bottom: 1.5px dashed rgba(20,93,160,0.35); cursor: help;
+      color: inherit; transition: border-color 0.15s, color 0.15s;
+      border-radius: 1px;
+    }
+    .result-body .explain-term:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* Explain tooltip */
+    .explain-tooltip {
+      position: fixed; z-index: 9999;
+      max-width: 300px; padding: 12px 14px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+      font-size: 12px; line-height: 1.65; color: var(--text-main);
+      animation: tooltipIn 0.15s ease;
+    }
+    .explain-tooltip .tt-word {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--primary); margin-bottom: 5px;
+    }
+    .explain-tooltip .tt-loading {
+      display: flex; align-items: center; gap: 7px; color: var(--text-muted); font-size: 11px;
+    }
+    .explain-tooltip .tt-loading::before {
+      content: ''; width: 12px; height: 12px; border: 2px solid var(--border);
+      border-top-color: var(--primary); border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes tooltipIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
     .result-footer {
       padding: 10px 16px;
       border-top: 1px solid var(--border);
@@ -818,7 +876,7 @@
           <div id="center-upload">
             <div class="panel-header">
               <span class="panel-title">New Analysis</span>
-              <span id="limit-hint-header" style="font-size:11px;color:var(--text-faint);">Powered by Gemini 2.0 Flash Lite</span>
+              <span id="limit-hint-header" style="font-size:11px;color:var(--text-faint);">Powered by Gemini 2.5 Flash</span>
             </div>
             <div class="upload-body">
 
@@ -1113,7 +1171,7 @@
         limitHint.textContent = 'Pro · unlimited analyses';
       } else {
         const left = Math.max(0, FREE_LIMIT - (u.docs_used || 0));
-        limitHint.textContent = `${left} of ${FREE_LIMIT} free analyses remaining`;
+        limitHint.textContent = `${left} of ${FREE_LIMIT} free analyses remaining this week`;
         document.getElementById('btn-upgrade').classList.remove('hidden');
       }
       document.getElementById('stat-plan').textContent = u.plan === 'pro' ? 'Pro ✦' : 'Free';
@@ -1346,8 +1404,6 @@
       e.preventDefault(); dropZone.classList.remove('drag-over');
       setFile(e.dataTransfer.files[0] ?? null);
     });
-    dropZone.addEventListener('click', () => fileInput.click());
-
     document.querySelectorAll('.mode-card').forEach(card => {
       card.addEventListener('click', () => {
         document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
@@ -1436,6 +1492,132 @@
       centerResult.classList.toggle('hidden', state !== 'result');
     }
 
+    // ── Format AI output as rich HTML ─────────────────────────────────────
+    function escapeHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function markTerms(text) {
+      return text.replace(/\{\{(.+?)\}\}/g, '<span class="explain-term" data-term="$1">$1</span>');
+    }
+
+    function formatResultText(raw, type) {
+      if (!raw || !raw.trim()) return '';
+      const normalized = raw.replace(/[.,;]?\s*•/g, '\n•').replace(/\n{3,}/g, '\n\n');
+      const lines = normalized.split('\n');
+      let html = '';
+      let inList = false;
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) {
+          if (inList) { html += '</ul>'; inList = false; }
+          continue;
+        }
+
+        const bulletMatch = trimmed.match(/^[•\-\*]\s*(.*)/);
+        if (bulletMatch) {
+          if (!inList) { html += '<ul>'; inList = true; }
+          let content = escapeHtml(bulletMatch[1]);
+
+          if (type === 'risks') {
+            content = content.replace(
+              /\[(High|Medium|Low)\]/i,
+              (_, s) => `<span class="severity-tag ${s.toLowerCase()}">${s}</span>`
+            );
+            content = content.replace(
+              /\b(Severity:\s*)(High|Medium|Low)\b/i,
+              (_, pre, s) => `<span class="severity-tag ${s.toLowerCase()}">${s}</span>`
+            );
+          }
+
+          if (type === 'actions') {
+            content = content.replace(
+              /^\[([^\]]+)\]/,
+              (_, o) => `<span class="owner-tag">${escapeHtml(o)}</span>`
+            );
+          }
+
+          content = content.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+          content = content.replace(/ — /g, ' <span style="color:var(--text-faint)">—</span> ');
+          content = markTerms(content);
+
+          html += `<li>${content}</li>`;
+          continue;
+        }
+
+        if (inList) { html += '</ul>'; inList = false; }
+        let text = escapeHtml(trimmed);
+        text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        text = markTerms(text);
+        html += `<p>${text}</p>`;
+      }
+      if (inList) html += '</ul>';
+      return html;
+    }
+
+    // ── Explain tooltip ───────────────────────────────────────────────────
+    let activeTooltip = null;
+    const explainCache = {};
+
+    function closeTooltip() {
+      if (activeTooltip) { activeTooltip.remove(); activeTooltip = null; }
+    }
+
+    document.addEventListener('click', (e) => {
+      const term = e.target.closest('.explain-term');
+      if (!term) { closeTooltip(); return; }
+
+      e.preventDefault();
+      closeTooltip();
+
+      const word = term.dataset.term;
+      if (!word) return;
+
+      const parentText = term.closest('.result-body')?.textContent ?? '';
+      const idx = parentText.indexOf(word);
+      const context = parentText.slice(Math.max(0, idx - 80), idx + word.length + 80).trim();
+
+      const rect = term.getBoundingClientRect();
+      const tt = document.createElement('div');
+      tt.className = 'explain-tooltip';
+      tt.innerHTML = `<div class="tt-word">${escapeHtml(word)}</div><div class="tt-loading">Explaining…</div>`;
+
+      let top = rect.bottom + 8;
+      let left = rect.left;
+      if (top + 120 > window.innerHeight) top = rect.top - 120;
+      if (left + 300 > window.innerWidth) left = window.innerWidth - 310;
+      tt.style.top = top + 'px';
+      tt.style.left = Math.max(10, left) + 'px';
+
+      document.body.appendChild(tt);
+      activeTooltip = tt;
+
+      const lang = localStorage.getItem('pdfclarify_lang') || 'English';
+      const cacheKey = `${word}|${lang}`;
+      if (explainCache[cacheKey]) {
+        tt.innerHTML = `<div class="tt-word">${escapeHtml(word)}</div><div>${escapeHtml(explainCache[cacheKey])}</div>`;
+        return;
+      }
+
+      fetch('/api/explain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ word, context, language: lang }),
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (!activeTooltip) return;
+        const text = data.explanation || 'No explanation available.';
+        explainCache[cacheKey] = text;
+        tt.innerHTML = `<div class="tt-word">${escapeHtml(word)}</div><div>${escapeHtml(text)}</div>`;
+      })
+      .catch(() => {
+        if (!activeTooltip) return;
+        tt.innerHTML = `<div class="tt-word">${escapeHtml(word)}</div><div style="color:var(--text-muted)">Could not load explanation.</div>`;
+      });
+    });
+
     function showResult(filename, mode, ts) {
       document.getElementById('result-name').textContent = filename;
       document.getElementById('result-meta').textContent =
@@ -1445,9 +1627,9 @@
       badge.textContent = modeLabel(mode);
       badge.className   = `mode-badge ${mode}`;
 
-      document.getElementById('body-summary').textContent = resultData?.summary || '—';
-      document.getElementById('body-actions').textContent = resultData?.actions || '—';
-      document.getElementById('body-risks').textContent   = resultData?.risks   || '—';
+      document.getElementById('body-summary').innerHTML = formatResultText(resultData?.summary, 'summary') || '<p style="color:var(--text-faint)">—</p>';
+      document.getElementById('body-actions').innerHTML = formatResultText(resultData?.actions, 'actions') || '<p style="color:var(--text-faint)">—</p>';
+      document.getElementById('body-risks').innerHTML   = formatResultText(resultData?.risks,   'risks')  || '<p style="color:var(--text-faint)">—</p>';
 
       // Switch to the tab matching the analysis mode
       setActiveTab(mode === 'summary' || mode === 'actions' || mode === 'risks' ? mode : 'summary');

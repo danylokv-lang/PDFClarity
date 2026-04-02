@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
 
   const res = NextResponse.json({
     success: true,
-    user: { id: user.id, email: user.email, plan: user.plan, docs_used: user.docs_used },
+    user: { id: user.id, email: user.email, plan: user.plan, docs_used: 0 },
   });
   res.headers.set("Set-Cookie", buildSessionCookie(token));
   return res;
