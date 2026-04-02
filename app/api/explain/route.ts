@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     ? ` Answer in ${language}.`
     : "";
 
-  const prompt = `Explain the term "${word}" in simple, everyday language that anyone can understand. Give a complete explanation in 2–3 sentences. Do not cut off mid-sentence.${langHint}${context ? `\n\nContext from the document: "${context}"` : ""}`;
+  const prompt = `Explain "${word}" in plain, simple language anyone can understand. Keep it concise.${langHint}${context ? `\n\nContext: "${context}"` : ""}`;
 
   try {
     const res = await fetch(
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.3, maxOutputTokens: 512 },
+          generationConfig: { temperature: 0.3, maxOutputTokens: 550, thinkingConfig: { thinkingBudget: 0 } },
         }),
       }
     );

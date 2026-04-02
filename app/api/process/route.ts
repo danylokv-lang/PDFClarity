@@ -197,7 +197,7 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Parse JSON result ─────────────────────────────────────────────────────
-  let result: { summary: string; actions: string; risks: string };
+  let result: { summary: string; actions: string; risks: string; language: string };
   try {
     const cleaned = rawText
       .trim()
@@ -208,9 +208,10 @@ export async function POST(req: NextRequest) {
       summary: String(parsed.summary ?? ""),
       actions: String(parsed.actions ?? ""),
       risks:   String(parsed.risks   ?? ""),
+      language,
     };
   } catch {
-    result = { summary: rawText, actions: "", risks: "" };
+    result = { summary: rawText, actions: "", risks: "", language };
   }
 
   const processingTime = ((Date.now() - startTime) / 1000).toFixed(1);

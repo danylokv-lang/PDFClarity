@@ -456,6 +456,14 @@
     }
     .tab:hover { color: var(--text-main); }
     .tab.active { background: rgba(20,93,160,0.08); color: var(--primary); }
+    .tab.focus-tab::after {
+      content: '●'; font-size: 7px; color: var(--primary);
+      margin-left: 3px; vertical-align: middle; line-height: 1;
+    }
+    .mode-focus-hint {
+      padding: 8px 20px; font-size: 11.5px; color: var(--text-muted);
+      border-top: 1px solid var(--border); line-height: 1.5;
+    }
 
     .copy-btn {
       background: var(--surface-muted); border: 1px solid var(--border);
@@ -642,21 +650,21 @@
                 <i data-lucide="list" style="width:16px;height:16px"></i>
               </div>
               <h5>Summary</h5>
-              <p>Key points and main ideas</p>
+              <p>Deep overview · other tabs get brief notes</p>
             </div>
             <div class="mode-card" data-mode="actions" id="mode-actions">
               <div class="mode-icon" style="background:rgba(5,150,105,0.1);color:#059669">
                 <i data-lucide="check-square" style="width:16px;height:16px"></i>
               </div>
               <h5>Action Items</h5>
-              <p>Tasks and next steps</p>
+              <p>Full task list · other tabs get brief notes</p>
             </div>
             <div class="mode-card" data-mode="risks" id="mode-risks">
               <div class="mode-icon" style="background:rgba(239,68,68,0.1);color:#dc2626">
                 <i data-lucide="alert-triangle" style="width:16px;height:16px"></i>
               </div>
               <h5>Key Risks</h5>
-              <p>Issues and concerns</p>
+              <p>Full risk list · other tabs get brief notes</p>
             </div>
           </div>
         </div>
@@ -758,16 +766,18 @@
           </div>
         </div>
 
+        <div id="mode-focus-hint" class="mode-focus-hint" style="display:none"></div>
+
         <div class="tab-content active" id="tab-summary">
-          <div class="content-label">Summary</div>
+          <div class="content-label" id="content-label-summary">Summary</div>
           <div class="result-body" id="body-summary">—</div>
         </div>
         <div class="tab-content" id="tab-actions">
-          <div class="content-label">Action Items</div>
+          <div class="content-label" id="content-label-actions">Action Items</div>
           <div class="result-body" id="body-actions">—</div>
         </div>
         <div class="tab-content" id="tab-risks">
-          <div class="content-label">Key Risks</div>
+          <div class="content-label" id="content-label-risks">Key Risks</div>
           <div class="result-body" id="body-risks">—</div>
         </div>
 
@@ -776,6 +786,9 @@
           <div class="spacer"></div>
           <button class="btn-secondary" id="new-analysis-btn">
             <i data-lucide="plus" style="width:14px;height:14px"></i> New analysis
+          </button>
+          <button class="btn-primary" id="done-btn" style="display:none">
+            <i data-lucide="layout-dashboard" style="width:14px;height:14px"></i> Done
           </button>
         </div>
       </div>
@@ -814,6 +827,7 @@
     let selectedFile   = null;
     let selectedMode   = 'summary';
     let selectedLang   = localStorage.getItem('pdfclarify_lang') || 'English';
+    let resultLang     = selectedLang;
     let resultData     = null;
     let progressTimer  = null;
     const FREE_LIMIT   = 3;
@@ -1232,7 +1246,7 @@
       activeTooltip = tt;
 
       // Check cache
-      const lang = localStorage.getItem('pdfclarify_lang') || 'English';
+      const lang = resultLang;
       const cacheKey = `${word}|${lang}`;
       if (explainCache[cacheKey]) {
         tt.innerHTML = `<div class="tt-word">${escapeHtml(word)}</div><div>${escapeHtml(explainCache[cacheKey])}</div>`;
@@ -1261,6 +1275,7 @@
     // ── Show results ──────────────────────────────────────────────────────────
     function showResults() {
       const modeLabel = { summary: 'Summary', actions: 'Action Items', risks: 'Key Risks' };
+      resultLang = selectedLang;
 
       resFilename.textContent = selectedFile?.name ?? '—';
       resMode.textContent     = modeLabel[selectedMode] ?? selectedMode;
@@ -1276,7 +1291,19 @@
 
       // Activate the tab matching the analysis mode
       switchTab(selectedMode);
+
+      // Mark focus tab and show hint
+      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('focus-tab', t.dataset.tab === selectedMode));
+      const focusLabels = { summary: 'Summary', actions: 'Actions', risks: 'Key Risks' };
+      const hintEl = document.getElementById('mode-focus-hint');
+      if (hintEl) {
+        hintEl.innerHTML = `<b>${focusLabels[selectedMode] ?? selectedMode}</b> is the focus of this analysis — other tabs show brief context.`;
+        hintEl.style.display = '';
+      }
+
       setStep(3);
+      // Show Done button only for logged-in users
+      document.getElementById('done-btn').style.display = isGuest ? 'none' : '';
     }
 
     // ── Tabs ──────────────────────────────────────────────────────────────────
@@ -1345,6 +1372,7 @@
 
     document.getElementById('reset-btn').addEventListener('click', resetToUpload);
     document.getElementById('new-analysis-btn').addEventListener('click', resetToUpload);
+    document.getElementById('done-btn').addEventListener('click', () => { window.location.href = '/dashboard'; });
 
     // ── Init ──────────────────────────────────────────────────────────────────
     checkAuth();

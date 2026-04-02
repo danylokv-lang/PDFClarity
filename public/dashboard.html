@@ -569,6 +569,14 @@
     }
     .tab:hover { color: var(--text-main); }
     .tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+    .tab.focus-tab::after {
+      content: '●'; font-size: 7px; color: var(--primary);
+      margin-left: 3px; vertical-align: middle; line-height: 1;
+    }
+    .mode-focus-hint {
+      padding: 6px 14px; font-size: 11px; color: var(--text-muted);
+      border-top: 1px solid var(--border); line-height: 1.5;
+    }
 
     .tab-pane { padding: 20px; display: none; animation: fadeUp 0.18s ease; }
     .tab-pane.active { display: block; }
@@ -906,21 +914,21 @@
                     <i data-lucide="list" style="width:13px;height:13px"></i>
                   </div>
                   <h5>Summary</h5>
-                  <p>Key points &amp; ideas</p>
+                  <p>Deep overview · other tabs brief</p>
                 </div>
                 <div class="mode-card" data-mode="actions">
                   <div class="mode-icon" style="background:rgba(5,150,105,0.1);color:var(--green)">
                     <i data-lucide="check-square" style="width:13px;height:13px"></i>
                   </div>
                   <h5>Action Items</h5>
-                  <p>Tasks &amp; next steps</p>
+                  <p>Full task list · other tabs brief</p>
                 </div>
                 <div class="mode-card" data-mode="risks">
                   <div class="mode-icon" style="background:rgba(220,38,38,0.1);color:var(--red)">
                     <i data-lucide="alert-triangle" style="width:13px;height:13px"></i>
                   </div>
                   <h5>Key Risks</h5>
-                  <p>Issues &amp; concerns</p>
+                  <p>Full risk list · other tabs brief</p>
                 </div>
               </div>
 
@@ -1001,6 +1009,7 @@
                 <i data-lucide="alert-triangle" style="width:11px;height:11px"></i>Risks
               </div>
             </div>
+            <div id="mode-focus-hint" class="mode-focus-hint" style="display:none"></div>
             <div class="tab-pane active" id="tab-pane-summary">
               <div class="result-body" id="body-summary"></div>
             </div>
@@ -1108,6 +1117,7 @@
     let selectedFile  = null;
     let selectedMode  = 'summary';
     let selectedLang  = localStorage.getItem('pdfclarify_lang') || 'English';
+    let resultLang    = selectedLang;
     let resultData    = null;
     let progressTimer = null;
     const FREE_LIMIT  = 3;
@@ -1266,6 +1276,9 @@
           risks:   ''
         };
       }
+
+      // Use the language the doc was originally analyzed in
+      resultLang = resultData?.language || selectedLang;
 
       showResult(doc.filename, doc.mode || 'summary', doc.created_at);
     }
@@ -1593,7 +1606,7 @@
       document.body.appendChild(tt);
       activeTooltip = tt;
 
-      const lang = localStorage.getItem('pdfclarify_lang') || 'English';
+      const lang = resultLang;
       const cacheKey = `${word}|${lang}`;
       if (explainCache[cacheKey]) {
         tt.innerHTML = `<div class="tt-word">${escapeHtml(word)}</div><div>${escapeHtml(explainCache[cacheKey])}</div>`;
@@ -1632,7 +1645,17 @@
       document.getElementById('body-risks').innerHTML   = formatResultText(resultData?.risks,   'risks')  || '<p style="color:var(--text-faint)">—</p>';
 
       // Switch to the tab matching the analysis mode
-      setActiveTab(mode === 'summary' || mode === 'actions' || mode === 'risks' ? mode : 'summary');
+      const safeMode = mode === 'summary' || mode === 'actions' || mode === 'risks' ? mode : 'summary';
+      setActiveTab(safeMode);
+
+      // Mark focus tab and show hint
+      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('focus-tab', t.dataset.tab === safeMode));
+      const focusLabels = { summary: 'Summary', actions: 'Actions', risks: 'Key Risks' };
+      const hintEl = document.getElementById('mode-focus-hint');
+      if (hintEl) {
+        hintEl.innerHTML = `<b>${focusLabels[safeMode]}</b> is the focus of this analysis — other tabs show brief context.`;
+        hintEl.style.display = '';
+      }
 
       showState('result');
     }
