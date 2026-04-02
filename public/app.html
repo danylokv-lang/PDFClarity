@@ -460,16 +460,21 @@
 
   <!-- ── Header ─────────────────────────────────── -->
   <header>
-    <div class="logo">
+    <a class="logo" href="/index.html" style="text-decoration:none">
       <i data-lucide="file-text" style="width:18px;height:18px"></i>
       PDFClarify
-    </div>
+    </a>
     <div class="nav-right" id="nav-right" style="display:none;">
       <span class="doc-counter hidden" id="doc-counter"></span>
       <span class="badge-pro hidden"   id="badge-pro">Pro</span>
       <button class="btn-upgrade hidden" id="btn-upgrade">Upgrade →</button>
       <span class="nav-email" id="nav-email"></span>
       <button class="btn-signout" id="btn-signout">Sign out</button>
+      <!-- Guest nav (shown when not logged in) -->
+      <div id="nav-guest" style="display:none;align-items:center;gap:8px;">
+        <a href="/login.html" style="font-size:13px;font-weight:500;color:var(--text-muted);text-decoration:none;padding:6px 12px;border-radius:8px;transition:background 0.15s;" onmouseover="this.style.background='var(--surface-muted)'" onmouseout="this.style.background=''">Sign in</a>
+        <a href="/login.html" style="font-size:13px;font-weight:600;color:#fff;background:var(--primary);text-decoration:none;padding:7px 14px;border-radius:8px;transition:background 0.15s;" onmouseover="this.style.background='var(--primary-hover)'" onmouseout="this.style.background='var(--primary)'">Create account</a>
+      </div>
     </div>
   </header>
 
@@ -488,6 +493,27 @@
     <!-- ── Step 1: Upload ──────────────────────── -->
     <div id="upload-step">
       <div class="upload-card">
+
+        <!-- Guest banner -->
+        <div id="guest-banner" class="hidden" style="display:flex;align-items:center;gap:10px;background:rgba(20,93,160,0.06);border:1px solid rgba(20,93,160,0.15);border-radius:10px;padding:11px 16px;margin-bottom:20px;font-size:13px;">
+          <i data-lucide="sparkles" style="width:14px;height:14px;color:var(--primary);flex-shrink:0"></i>
+          <span style="color:var(--primary);font-weight:600;">1 free analysis included</span>
+          <span style="color:var(--text-muted);">· no account required to try</span>
+          <a href="/login.html" style="margin-left:auto;font-size:12px;font-weight:600;color:var(--primary);text-decoration:none;">Sign in →</a>
+        </div>
+
+        <!-- Trial-used wall -->
+        <div id="trial-wall" class="hidden" style="text-align:center;padding:32px 0 8px;">
+          <div style="width:44px;height:44px;background:rgba(20,93,160,0.08);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+            <i data-lucide="lock" style="width:20px;height:20px;color:var(--primary)"></i>
+          </div>
+          <h3 style="font-size:17px;font-weight:700;margin-bottom:8px;">You've used your free trial</h3>
+          <p style="font-size:14px;color:var(--text-muted);margin-bottom:24px;line-height:1.6;">Create a free account to run unlimited analyses and save your results.</p>
+          <div style="display:flex;gap:10px;justify-content:center;">
+            <a href="/login.html" style="background:var(--primary);color:#fff;text-decoration:none;padding:10px 22px;border-radius:8px;font-size:14px;font-weight:600;">Create free account</a>
+            <a href="/login.html" style="background:var(--surface-muted);color:var(--text-main);text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;border:1px solid var(--border);">Sign in</a>
+          </div>
+        </div>
 
         <div class="drop-zone" id="drop-zone">
           <input type="file" accept=".pdf,application/pdf" id="file-input">
@@ -633,6 +659,28 @@
 
   </main>
 
+  <!-- ── Save gate (shown over results for guest) ── -->
+  <div id="save-gate" class="hidden" style="position:fixed;inset:0;background:rgba(245,243,240,0.88);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:500;padding:24px;">
+    <div style="background:#fff;border:1px solid var(--border);border-radius:20px;padding:40px 36px;max-width:440px;width:100%;text-align:center;box-shadow:0 24px 64px rgba(15,23,42,0.12);">
+      <div style="width:52px;height:52px;background:rgba(20,93,160,0.08);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+        <i data-lucide="check-circle" style="width:24px;height:24px;color:var(--primary)"></i>
+      </div>
+      <h2 style="font-size:20px;font-weight:800;margin-bottom:10px;letter-spacing:-0.02em;">Your analysis is ready!</h2>
+      <p style="font-size:14px;color:var(--text-muted);line-height:1.7;margin-bottom:28px;">Create a free account to save it to your history and run real AI analyses on your documents.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <a href="/login.html" onclick="localStorage.setItem('pdfclarify_trial','used')" style="background:var(--primary);color:#fff;text-decoration:none;padding:13px 20px;border-radius:10px;font-size:14px;font-weight:700;display:block;">Create free account →</a>
+        <a href="/login.html" onclick="localStorage.setItem('pdfclarify_trial','used')" style="background:var(--surface-muted);color:var(--text-main);text-decoration:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:500;display:block;border:1px solid var(--border);">Sign in to existing account</a>
+      </div>
+      <p style="font-size:12px;color:var(--text-faint);margin-top:16px;">Free forever · no credit card required</p>
+    </div>
+  </div>
+
+  <!-- ── Welcome toast (shown after registration) ── -->
+  <div id="welcome-toast" class="hidden" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:500;z-index:600;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,0.2);white-space:nowrap;">
+    <i data-lucide="check-circle" style="width:15px;height:15px;color:#22c55e"></i>
+    Account created! Upload a PDF to run your first saved analysis.
+  </div>
+
   <script>
     lucide.createIcons();
 
@@ -643,6 +691,8 @@
     let resultData   = null;
     let progressTimer = null;
     const FREE_LIMIT = 3;
+    let isGuest = false;
+    const TRIAL_KEY = 'pdfclarify_trial';
 
     // ── Elements ─────────────────────────────────────────────────────────────
     const authLoading  = document.getElementById('auth-loading');
@@ -701,14 +751,36 @@
       try {
         const res  = await fetch('/api/auth/me');
         const data = await res.json();
-        if (!data.user) { window.location.href = '/login.html'; return; }
-        currentUser = data.user;
-        renderNav();
+        if (data.user) {
+          currentUser = data.user;
+          isGuest = false;
+          renderNav();
+          // Welcome toast if they just registered after a guest trial
+          if (localStorage.getItem(TRIAL_KEY) === 'used') {
+            localStorage.removeItem(TRIAL_KEY);
+            const toast = document.getElementById('welcome-toast');
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 5000);
+          }
+        } else {
+          enterGuestMode();
+        }
       } catch {
-        window.location.href = '/login.html';
+        enterGuestMode();
       } finally {
         authLoading.style.display = 'none';
         navRight.style.display    = 'flex';
+      }
+    }
+
+    function enterGuestMode() {
+      isGuest = true;
+      document.getElementById('nav-guest').style.display = 'flex';
+      document.getElementById('guest-banner').classList.remove('hidden');
+      if (localStorage.getItem(TRIAL_KEY) === 'used') {
+        document.getElementById('trial-wall').classList.remove('hidden');
+        document.getElementById('drop-zone').style.display = 'none';
+        analyzeBtn.disabled = true;
       }
     }
 
@@ -728,6 +800,13 @@
     }
 
     function updateLimitHint() {
+      if (isGuest) {
+        const used = localStorage.getItem(TRIAL_KEY) === 'used';
+        limitHint.innerHTML = used
+          ? 'Free trial used · <a href="/login.html" style="color:var(--primary);font-weight:600;">sign in to continue</a>'
+          : '1 free analysis included · no account needed';
+        return;
+      }
       if (!currentUser) return;
       if (currentUser.plan === 'pro') {
         limitHint.innerHTML = 'Powered by Gemini 2.0 Flash';
@@ -741,6 +820,7 @@
     }
 
     function canProcess() {
+      if (isGuest) return localStorage.getItem(TRIAL_KEY) !== 'used';
       if (!currentUser) return false;
       if (currentUser.plan === 'pro') return true;
       return (currentUser.docs_used || 0) < FREE_LIMIT;
@@ -773,7 +853,7 @@
       chipSize.textContent = formatBytes(f.size);
       fileChip.classList.add('visible');
       dropZone.style.display = 'none';
-      analyzeBtn.disabled = !canProcess();
+      analyzeBtn.disabled = isGuest ? (localStorage.getItem(TRIAL_KEY) === 'used') : !canProcess();
     }
 
     function clearFile() {
@@ -814,6 +894,26 @@
 
     // ── Analyze ───────────────────────────────────────────────────────────────
     analyzeBtn.addEventListener('click', async () => {
+      // ── Guest free trial ──
+      if (isGuest) {
+        if (!selectedFile || localStorage.getItem(TRIAL_KEY) === 'used') return;
+        localStorage.setItem(TRIAL_KEY, 'used');
+        hideUploadError();
+        setStep(2);
+        startProgress();
+        await new Promise(r => setTimeout(r, 5200));
+        clearProgress();
+        resultData = {
+          summary: 'This is a preview of what your AI-generated summary looks like.\n\nPDFClarify reads your entire document and extracts the most important ideas, arguments, and conclusions — presented in a clean, readable format.\n\nCreate a free account to run a real analysis on your uploaded PDF and save results to your history.',
+          actions: '\u2022 Key action items will be extracted directly from your document\n\u2022 Each task includes context and priority so you know what to do and why\n\u2022 You can copy, export, or share them as a checklist\n\nCreate a free account to see real action items from your PDF.',
+          risks: '\u2022 Potential risks and concerns will be identified here\n\u2022 Each risk includes severity and the relevant section\n\u2022 Helps you catch issues before they become problems\n\nCreate a free account to see risk analysis from your actual PDF.'
+        };
+        showResults();
+        setTimeout(() => document.getElementById('save-gate').classList.remove('hidden'), 400);
+        return;
+      }
+
+      // ── Logged-in flow ──
       if (!selectedFile || !canProcess()) return;
       hideUploadError();
       setStep(2);

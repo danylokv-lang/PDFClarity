@@ -907,7 +907,7 @@
 
   <!-- ── HEADER ──────────────────────────────────── -->
   <header>
-    <a class="logo" href="/">
+    <a class="logo" href="/" id="logo-link">
       <i data-lucide="file-text" style="width:18px;height:18px"></i>
       PDFClarify
     </a>
@@ -918,8 +918,8 @@
       <a class="nav-link" href="#pricing">Pricing</a>
     </nav>
     <div class="nav-actions">
-      <a class="btn-ghost" href="#">Sign in</a>
-      <a class="btn-primary" href="demo.html">
+      <a class="btn-ghost" href="/login.html" id="nav-signin">Sign in</a>
+      <a class="btn-primary" href="/app.html" id="nav-try">
         <i data-lucide="sparkles" style="width:14px;height:14px"></i>
         Try it free
       </a>
@@ -937,7 +937,7 @@
       <h1>Turn any PDF into <em>clear insights</em> in seconds</h1>
       <p class="hero-sub">PDFClarify extracts summaries, action items, and key risks from your work documents — so you can act on them, not just read them.</p>
       <div class="hero-actions">
-        <a class="btn-primary-lg" href="demo.html">
+        <a class="btn-primary-lg" href="/app.html">
           <i data-lucide="sparkles" style="width:16px;height:16px"></i>
           Try it free — no sign up
         </a>
@@ -1323,7 +1323,7 @@
               Markdown export
             </div>
           </div>
-          <button class="btn-plan btn-plan-free" onclick="window.location.href='demo.html'">Get started free</button>
+          <button class="btn-plan btn-plan-free" onclick="window.location.href='/app.html'">Get started free</button>
         </div>
 
         <!-- Pro -->
@@ -1370,7 +1370,7 @@
     <div class="container">
       <h2>Ready to stop reading, start acting?</h2>
       <p>Drop your first PDF in under 10 seconds. No account needed to try.</p>
-      <a class="btn-primary-lg" href="demo.html">
+      <a class="btn-primary-lg" href="/app.html">
         <i data-lucide="sparkles" style="width:16px;height:16px"></i>
         Try PDFClarify free
       </a>
@@ -1550,6 +1550,26 @@
         document.querySelectorAll('.modal-overlay.open').forEach(m => closeModal(m.id));
       }
     });
+    // ── Smart nav: if already logged in, swap to Dashboard button ─────────
+    (async () => {
+      try {
+        const res = await fetch('/api/auth/me');
+        const data = await res.json();
+        if (data.user) {
+          // User is logged in — logo goes to dashboard, nav shows Dashboard button
+          document.getElementById('logo-link').href = '/app.html';
+          const actions = document.querySelector('.nav-actions');
+          actions.innerHTML = `
+            <span style="font-size:13px;color:var(--text-muted);">${data.user.email}</span>
+            <a class="btn-primary" href="/app.html">
+              <i data-lucide="layout-dashboard" style="width:14px;height:14px"></i>
+              Dashboard
+            </a>`;
+          lucide.createIcons();
+        }
+      } catch { /* not logged in, keep defaults */ }
+    })();
+
     // ── Pricing toggle ────────────────────────────────
     const toggleBtn   = document.getElementById('billing-toggle');
     const lblMonthly  = document.getElementById('lbl-monthly');
