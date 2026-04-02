@@ -309,6 +309,49 @@
     .mode-card h5 { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
     .mode-card p  { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
 
+    /* ── Language picker ─────────────────────────── */
+    .lang-row {
+      display: flex; align-items: center; gap: 8px;
+      margin-top: 20px;
+    }
+    .lang-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--text-faint); white-space: nowrap;
+    }
+    .lang-select {
+      flex: 1;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--text-main);
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 10px;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.15s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-size: 16px;
+      padding-right: 28px;
+    }
+    .lang-select:focus { border-color: var(--primary); }
+    .lang-custom {
+      flex: 1;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--text-main);
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 10px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .lang-custom:focus { border-color: var(--primary); }
+
     .actions-row {
       display: flex; align-items: center; justify-content: flex-end;
       margin-top: 24px;
@@ -561,6 +604,31 @@
           </div>
         </div>
 
+        <!-- Language picker -->
+        <div class="lang-row">
+          <span class="lang-label">Language</span>
+          <select class="lang-select" id="lang-select">
+            <option value="English">🇬🇧 English</option>
+            <option value="Ukrainian">🇺🇦 Ukrainian</option>
+            <option value="Spanish">🇪🇸 Spanish</option>
+            <option value="French">🇫🇷 French</option>
+            <option value="German">🇩🇪 German</option>
+            <option value="Italian">🇮🇹 Italian</option>
+            <option value="Portuguese">🇵🇹 Portuguese</option>
+            <option value="Polish">🇵🇱 Polish</option>
+            <option value="Dutch">🇳🇱 Dutch</option>
+            <option value="Russian">🇷🇺 Russian</option>
+            <option value="Chinese">🇨🇳 Chinese</option>
+            <option value="Japanese">🇯🇵 Japanese</option>
+            <option value="Korean">🇰🇷 Korean</option>
+            <option value="Arabic">🇸🇦 Arabic</option>
+            <option value="Hindi">🇮🇳 Hindi</option>
+            <option value="Turkish">🇹🇷 Turkish</option>
+            <option value="Other">✏️ Other…</option>
+          </select>
+          <input class="lang-custom hidden" id="lang-custom" type="text" placeholder="e.g. Swedish" maxlength="40">
+        </div>
+
         <div class="actions-row">
           <p class="limit-hint" id="limit-hint">Powered by Gemini 2.0 Flash</p>
           <button class="btn-primary" id="analyze-btn" disabled>
@@ -685,14 +753,15 @@
     lucide.createIcons();
 
     // ── State ────────────────────────────────────────────────────────────────
-    let currentUser  = null;
-    let selectedFile = null;
-    let selectedMode = 'summary';
-    let resultData   = null;
-    let progressTimer = null;
-    const FREE_LIMIT = 3;
-    let isGuest = false;
-    const TRIAL_KEY = 'pdfclarify_trial';
+    let currentUser    = null;
+    let selectedFile   = null;
+    let selectedMode   = 'summary';
+    let selectedLang   = localStorage.getItem('pdfclarify_lang') || 'English';
+    let resultData     = null;
+    let progressTimer  = null;
+    const FREE_LIMIT   = 3;
+    let isGuest        = false;
+    const TRIAL_KEY    = 'pdfclarify_trial';
 
     // ── Elements ─────────────────────────────────────────────────────────────
     const authLoading  = document.getElementById('auth-loading');
@@ -883,6 +952,37 @@
     });
     dropZone.addEventListener('click', () => fileInput.click());
 
+    // ── Language selector ─────────────────────────────────────────────────────
+    const langSelect = document.getElementById('lang-select');
+    const langCustom = document.getElementById('lang-custom');
+
+    // Restore saved language
+    const savedLang = localStorage.getItem('pdfclarify_lang') || 'English';
+    const knownOpts = Array.from(langSelect.options).map(o => o.value);
+    if (knownOpts.includes(savedLang)) {
+      langSelect.value = savedLang;
+    } else {
+      langSelect.value = 'Other';
+      langCustom.value = savedLang;
+      langCustom.classList.remove('hidden');
+    }
+
+    langSelect.addEventListener('change', () => {
+      if (langSelect.value === 'Other') {
+        langCustom.classList.remove('hidden');
+        langCustom.focus();
+        selectedLang = langCustom.value.trim() || 'English';
+      } else {
+        langCustom.classList.add('hidden');
+        selectedLang = langSelect.value;
+      }
+      localStorage.setItem('pdfclarify_lang', selectedLang);
+    });
+    langCustom.addEventListener('input', () => {
+      selectedLang = langCustom.value.trim() || 'English';
+      localStorage.setItem('pdfclarify_lang', selectedLang);
+    });
+
     // ── Mode selector ─────────────────────────────────────────────────────────
     document.querySelectorAll('.mode-card').forEach(card => {
       card.addEventListener('click', () => {
@@ -919,9 +1019,14 @@
       setStep(2);
       startProgress();
 
+      const lang = langSelect.value === 'Other'
+        ? (langCustom.value.trim() || 'English')
+        : langSelect.value;
+
       const formData = new FormData();
       formData.append('file', selectedFile);
       formData.append('mode', selectedMode);
+      formData.append('language', lang);
 
       try {
         const res  = await fetch('/api/process', { method: 'POST', body: formData });
