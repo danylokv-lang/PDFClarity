@@ -327,7 +327,7 @@
 
     <p class="footer-note">
       By continuing you agree to our
-      <a href="index.html">Terms</a> and <a href="index.html">Privacy Policy</a>.
+      <a href="/">Terms</a> and <a href="/">Privacy Policy</a>.
     </p>
   </div>
 
@@ -404,7 +404,7 @@
         });
         const data = await res.json();
         if (!res.ok) { showError('si-error', 'si-error-text', data.error || 'Invalid email or password'); setLoading('si-btn', false, 'Sign in'); return; }
-        window.location.href = '/dashboard.html';
+        window.location.href = '/dashboard';
       } catch {
         showError('si-error', 'si-error-text', 'Network error — please try again');
         setLoading('si-btn', false, 'Sign in');
@@ -427,7 +427,7 @@
         });
         const data = await res.json();
         if (!res.ok) { showError('reg-error', 'reg-error-text', data.error || 'Could not create account'); setLoading('reg-btn', false, 'Create account'); return; }
-        window.location.href = '/dashboard.html';
+        window.location.href = '/dashboard';
       } catch {
         showError('reg-error', 'reg-error-text', 'Network error — please try again');
         setLoading('reg-btn', false, 'Create account');

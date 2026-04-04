@@ -568,7 +568,7 @@
 
   <!-- ── Header ─────────────────────────────────── -->
   <header>
-    <a class="logo" href="/index.html" style="text-decoration:none">
+    <a class="logo" href="/" style="text-decoration:none">
       <i data-lucide="file-text" style="width:18px;height:18px"></i>
       PDFClarify
     </a>
@@ -580,8 +580,8 @@
       <button class="btn-signout" id="btn-signout">Sign out</button>
       <!-- Guest nav (shown when not logged in) -->
       <div id="nav-guest" style="display:none;align-items:center;gap:8px;">
-        <a href="/login.html" style="font-size:13px;font-weight:500;color:var(--text-muted);text-decoration:none;padding:6px 12px;border-radius:8px;transition:background 0.15s;" onmouseover="this.style.background='var(--surface-muted)'" onmouseout="this.style.background=''">Sign in</a>
-        <a href="/login.html" style="font-size:13px;font-weight:600;color:#fff;background:var(--primary);text-decoration:none;padding:7px 14px;border-radius:8px;transition:background 0.15s;" onmouseover="this.style.background='var(--primary-hover)'" onmouseout="this.style.background='var(--primary)'">Create account</a>
+        <a href="/login" style="font-size:13px;font-weight:500;color:var(--text-muted);text-decoration:none;padding:6px 12px;border-radius:8px;transition:background 0.15s;" onmouseover="this.style.background='var(--surface-muted)'" onmouseout="this.style.background=''">Sign in</a>
+        <a href="/login" style="font-size:13px;font-weight:600;color:#fff;background:var(--primary);text-decoration:none;padding:7px 14px;border-radius:8px;transition:background 0.15s;" onmouseover="this.style.background='var(--primary-hover)'" onmouseout="this.style.background='var(--primary)'">Create account</a>
       </div>
     </div>
   </header>
@@ -607,7 +607,7 @@
           <i data-lucide="sparkles" style="width:14px;height:14px;color:var(--primary);flex-shrink:0"></i>
           <span style="color:var(--primary);font-weight:600;">1 free analysis included</span>
           <span style="color:var(--text-muted);">· no account required to try</span>
-          <a href="/login.html" style="margin-left:auto;font-size:12px;font-weight:600;color:var(--primary);text-decoration:none;">Sign in →</a>
+          <a href="/login" style="margin-left:auto;font-size:12px;font-weight:600;color:var(--primary);text-decoration:none;">Sign in →</a>
         </div>
 
         <!-- Trial-used wall -->
@@ -618,8 +618,8 @@
           <h3 style="font-size:17px;font-weight:700;margin-bottom:8px;">You've used your free trial</h3>
           <p style="font-size:14px;color:var(--text-muted);margin-bottom:24px;line-height:1.6;">Create a free account to run unlimited analyses and save your results.</p>
           <div style="display:flex;gap:10px;justify-content:center;">
-            <a href="/login.html" style="background:var(--primary);color:#fff;text-decoration:none;padding:10px 22px;border-radius:8px;font-size:14px;font-weight:600;">Create free account</a>
-            <a href="/login.html" style="background:var(--surface-muted);color:var(--text-main);text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;border:1px solid var(--border);">Sign in</a>
+            <a href="/login" style="background:var(--primary);color:#fff;text-decoration:none;padding:10px 22px;border-radius:8px;font-size:14px;font-weight:600;">Create free account</a>
+            <a href="/login" style="background:var(--surface-muted);color:var(--text-main);text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;border:1px solid var(--border);">Sign in</a>
           </div>
         </div>
 
@@ -806,8 +806,8 @@
       <h2 style="font-size:20px;font-weight:800;margin-bottom:10px;letter-spacing:-0.02em;">Your analysis is ready!</h2>
       <p style="font-size:14px;color:var(--text-muted);line-height:1.7;margin-bottom:28px;">Create a free account to save it to your history and run real AI analyses on your documents.</p>
       <div style="display:flex;flex-direction:column;gap:10px;">
-        <a href="/login.html" onclick="localStorage.setItem('pdfclarify_trial','used')" style="background:var(--primary);color:#fff;text-decoration:none;padding:13px 20px;border-radius:10px;font-size:14px;font-weight:700;display:block;">Create free account →</a>
-        <a href="/login.html" onclick="localStorage.setItem('pdfclarify_trial','used')" style="background:var(--surface-muted);color:var(--text-main);text-decoration:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:500;display:block;border:1px solid var(--border);">Sign in to existing account</a>
+        <a href="/login" onclick="localStorage.setItem('pdfclarify_trial','used')" style="background:var(--primary);color:#fff;text-decoration:none;padding:13px 20px;border-radius:10px;font-size:14px;font-weight:700;display:block;">Create free account →</a>
+        <a href="/login" onclick="localStorage.setItem('pdfclarify_trial','used')" style="background:var(--surface-muted);color:var(--text-main);text-decoration:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:500;display:block;border:1px solid var(--border);">Sign in to existing account</a>
       </div>
       <p style="font-size:12px;color:var(--text-faint);margin-top:16px;">Free forever · no credit card required</p>
     </div>
@@ -943,7 +943,7 @@
       if (isGuest) {
         const used = localStorage.getItem(TRIAL_KEY) === 'used';
         limitHint.innerHTML = used
-          ? 'Free trial used · <a href="/login.html" style="color:var(--primary);font-weight:600;">sign in to continue</a>'
+          ? 'Free trial used · <a href="/login" style="color:var(--primary);font-weight:600;">sign in to continue</a>'
           : '1 free analysis included · no account needed';
         return;
       }
@@ -969,7 +969,7 @@
     // ── Sign out ──────────────────────────────────────────────────────────────
     document.getElementById('btn-signout').addEventListener('click', async () => {
       await fetch('/api/auth/logout', { method: 'POST' });
-      window.location.href = '/login.html';
+      window.location.href = '/login';
     });
 
     // ── File handling ─────────────────────────────────────────────────────────

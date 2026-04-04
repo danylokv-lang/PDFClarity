@@ -81,6 +81,20 @@
       transition: background 0.15s;
     }
     .btn-upgrade:hover { background: var(--primary-hover); }
+    .btn-upgrade:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-manage-billing {
+      background: none;
+      border: 1px solid var(--border);
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 5px 11px;
+      border-radius: 7px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .btn-manage-billing:hover { color: var(--text-main); border-color: rgba(15,23,42,0.2); }
     .nav-email {
       font-size: 13px;
       color: var(--text-muted);
@@ -834,12 +848,13 @@
 
   <!-- ── Header ────────────────────────────── -->
   <header>
-    <a class="logo" href="/dashboard.html">
+    <a class="logo" href="/dashboard">
       <i data-lucide="file-text" style="width:18px;height:18px"></i>
       PDFClarify
     </a>
     <div class="nav-right" id="nav-right" style="display:none;">
       <span id="badge-pro" class="badge-pro hidden">Pro</span>
+      <button id="btn-manage-billing" class="btn-manage-billing hidden">Manage billing</button>
       <button id="btn-upgrade" class="btn-upgrade hidden">Upgrade →</button>
       <span class="nav-email" id="nav-email"></span>
       <button class="btn-signout" id="btn-signout">Sign out</button>
@@ -855,7 +870,7 @@
         <h1 class="dash-title" id="greeting">Dashboard</h1>
         <p class="dash-subtitle" id="dash-date"></p>
       </div>
-      <a class="btn-analyze-top" href="/app.html">
+      <a class="btn-analyze-top" href="/app">
         <i data-lucide="plus" style="width:14px;height:14px"></i>
         New Analysis
       </a>
@@ -1103,6 +1118,15 @@
     </div><!-- /dash-grid -->
   </main>
 
+  <!-- Upgrade success / cancelled banner -->
+  <div id="upgrade-banner" class="hidden" style="position:fixed;top:68px;left:50%;transform:translateX(-50%);padding:11px 20px;border-radius:12px;font-size:13px;font-weight:500;z-index:600;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,0.12);white-space:nowrap;"></div>
+
+  <!-- Welcome toast -->
+  <div id="upgrade-toast" class="hidden" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:500;z-index:600;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,0.2);white-space:nowrap;">
+    <i data-lucide="zap" style="width:15px;height:15px;color:#facc15"></i>
+    You're now on Pro! Enjoy unlimited analyses.
+  </div>
+
   <!-- Welcome toast -->
   <div id="welcome-toast" class="hidden" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:500;z-index:600;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,0.2);white-space:nowrap;">
     <i data-lucide="check-circle" style="width:15px;height:15px;color:#22c55e"></i>
@@ -1147,7 +1171,7 @@
       try {
         const res  = await fetch('/api/auth/me');
         const data = await res.json();
-        if (!data.user) { window.location.href = '/login.html'; return; }
+        if (!data.user) { window.location.href = '/login'; return; }
         currentUser = data.user;
         renderNav();
         loadDashboard();
@@ -1159,7 +1183,7 @@
           setTimeout(() => toast.classList.add('hidden'), 5000);
         }
       } catch {
-        window.location.href = '/login.html';
+        window.location.href = '/login';
       } finally {
         document.getElementById('auth-loading').style.display = 'none';
         document.getElementById('nav-right').style.display    = 'flex';
@@ -1178,6 +1202,7 @@
       document.getElementById('nav-email').textContent = u.email;
       if (u.plan === 'pro') {
         document.getElementById('badge-pro').classList.remove('hidden');
+        document.getElementById('btn-manage-billing').classList.remove('hidden');
         limitHint.textContent = 'Pro · unlimited analyses';
       } else {
         const left = Math.max(0, FREE_LIMIT - (u.docs_used || 0));
@@ -1189,8 +1214,78 @@
 
     document.getElementById('btn-signout').addEventListener('click', async () => {
       await fetch('/api/auth/logout', { method: 'POST' });
-      window.location.href = '/login.html';
+      window.location.href = '/login';
     });
+
+    // ── Stripe: Upgrade button ─────────────────────────────
+    document.getElementById('btn-upgrade').addEventListener('click', async () => {
+      const btn = document.getElementById('btn-upgrade');
+      btn.disabled = true;
+      btn.textContent = 'Redirecting…';
+      try {
+        const res  = await fetch('/api/stripe/create-checkout', { method: 'POST' });
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          btn.disabled = false;
+          btn.textContent = 'Upgrade →';
+          alert(data.error || 'Could not start checkout. Please try again.');
+        }
+      } catch {
+        btn.disabled = false;
+        btn.textContent = 'Upgrade →';
+        alert('Connection error — please try again.');
+      }
+    });
+
+    // ── Stripe: Manage billing button ─────────────────────
+    document.getElementById('btn-manage-billing').addEventListener('click', async () => {
+      const btn = document.getElementById('btn-manage-billing');
+      btn.textContent = 'Opening…';
+      btn.style.pointerEvents = 'none';
+      try {
+        const res  = await fetch('/api/stripe/portal', { method: 'POST' });
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          btn.textContent = 'Manage billing';
+          btn.style.pointerEvents = '';
+          alert(data.error || 'Could not open billing portal. Please try again.');
+        }
+      } catch {
+        btn.textContent = 'Manage billing';
+        btn.style.pointerEvents = '';
+        alert('Connection error — please try again.');
+      }
+    });
+
+    // ── Stripe: Handle return from Checkout ───────────────
+    (function handleStripeReturn() {
+      const params = new URLSearchParams(window.location.search);
+      const status = params.get('upgrade');
+      if (!status) return;
+
+      // Clean the URL so refreshing doesn't re-trigger
+      history.replaceState(null, '', '/dashboard');
+
+      if (status === 'success') {
+        const toast = document.getElementById('upgrade-toast');
+        toast.classList.remove('hidden');
+        lucide.createIcons();
+        setTimeout(() => toast.classList.add('hidden'), 6000);
+      } else if (status === 'cancelled') {
+        const banner = document.getElementById('upgrade-banner');
+        banner.style.background = '#FEF3C7';
+        banner.style.color      = '#92400E';
+        banner.style.border     = '1px solid #FDE68A';
+        banner.innerHTML = '<i data-lucide="info" style="width:14px;height:14px"></i> Upgrade cancelled — you can upgrade any time from the dashboard.';
+        banner.classList.remove('hidden');
+        lucide.createIcons();
+        setTimeout(() => banner.classList.add('hidden'), 6000);
+      }
+    })();
 
     // ── Load dashboard data ────────────────────────────────
     async function loadDashboard() {

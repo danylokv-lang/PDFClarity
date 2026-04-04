@@ -886,6 +886,71 @@
     }
 
     /* ─────────────────────────────────────────────────
+       HERO GLOW + LOAD ANIMATIONS
+    ───────────────────────────────────────────────── */
+    .hero { position: relative; overflow: hidden; }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px; left: 50%;
+      transform: translateX(-50%);
+      width: 900px; height: 680px;
+      background: radial-gradient(ellipse at 50% 35%, rgba(20,93,160,0.07) 0%, transparent 65%);
+      pointer-events: none; z-index: 0;
+    }
+    .hero .container { position: relative; z-index: 1; }
+
+    @keyframes fadeSlideDown {
+      from { opacity: 0; transform: translateY(-12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .hero-badge      { animation: fadeSlideDown 0.5s ease 0.10s both; }
+    .hero h1         { animation: fadeSlideUp  0.6s ease 0.22s both; }
+    .hero-sub        { animation: fadeSlideUp  0.55s ease 0.36s both; }
+    .hero-actions    { animation: fadeSlideUp  0.55s ease 0.46s both; }
+    .hero-note       { animation: fadeSlideUp  0.5s ease 0.56s both; }
+    .hero-screenshot { animation: fadeSlideUp  0.7s ease 0.68s both;
+                       box-shadow: 0 24px 80px rgba(15,23,42,0.12), 0 4px 16px rgba(15,23,42,0.06), 0 0 0 1px rgba(20,93,160,0.08); }
+
+    /* ─────────────────────────────────────────────────
+       STATS BAR
+    ───────────────────────────────────────────────── */
+    .stats-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 36px 0; }
+    .stats-bar-grid { display: flex; align-items: center; justify-content: center; }
+    .stat-item { flex: 1; text-align: center; padding: 4px 20px; }
+    .stat-number {
+      font-size: 32px; font-weight: 800; color: var(--primary);
+      letter-spacing: -0.03em; line-height: 1; margin-bottom: 6px;
+    }
+    .stat-label { font-size: 12.5px; color: var(--text-muted); line-height: 1.4; }
+    .stat-divider { width: 1px; height: 42px; background: var(--border); flex-shrink: 0; }
+
+    /* ─────────────────────────────────────────────────
+       SCROLL FADE-IN
+    ───────────────────────────────────────────────── */
+    .fade-up { opacity: 0; transform: translateY(22px); transition: opacity 0.55s ease, transform 0.55s ease; }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+    /* ─────────────────────────────────────────────────
+       TOAST
+    ───────────────────────────────────────────────── */
+    .toast {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      background: var(--text-main); color: #fff;
+      padding: 13px 24px; border-radius: 10px;
+      font-size: 14px; font-weight: 500; z-index: 1000;
+      opacity: 0; transition: opacity 0.22s, transform 0.22s;
+      pointer-events: none; white-space: nowrap;
+      box-shadow: 0 8px 32px rgba(15,23,42,0.22);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ─────────────────────────────────────────────────
        RESPONSIVE
     ───────────────────────────────────────────────── */
     @media (max-width: 768px) {
@@ -898,6 +963,9 @@
       nav { display: none; }
       .app-mockup { grid-template-columns: 1fr; }
       .mock-sidebar { display: none; }
+      .stats-bar-grid { flex-wrap: wrap; }
+      .stat-item { min-width: 50%; border-bottom: 1px solid var(--border); padding: 16px 10px; }
+      .stat-divider { display: none; }
       footer { flex-direction: column; gap: 16px; text-align: center; }
       .footer-links { flex-wrap: wrap; justify-content: center; }
     }
@@ -918,8 +986,8 @@
       <a class="nav-link" href="#pricing">Pricing</a>
     </nav>
     <div class="nav-actions">
-      <a class="btn-ghost" href="/login.html" id="nav-signin">Sign in</a>
-      <a class="btn-primary" href="/app.html" id="nav-try">
+      <a class="btn-ghost" href="/login" id="nav-signin">Sign in</a>
+      <a class="btn-primary" href="/app" id="nav-try">
         <i data-lucide="sparkles" style="width:14px;height:14px"></i>
         Try it free
       </a>
@@ -937,14 +1005,14 @@
       <h1>Turn any PDF into <em>clear insights</em> in seconds</h1>
       <p class="hero-sub">PDFClarify extracts summaries, action items, and key risks from your work documents — so you can act on them, not just read them.</p>
       <div class="hero-actions">
-        <a class="btn-primary-lg" href="/app.html">
+        <a class="btn-primary-lg" href="/app">
           <i data-lucide="sparkles" style="width:16px;height:16px"></i>
           Try it free — no sign up
         </a>
         <a class="btn-ghost" href="#how-it-works" style="padding:13px 24px;font-size:15px">See how it works</a>
       </div>
       <div class="hero-note">
-        <span><i data-lucide="check-circle" style="width:13px;height:13px;color:#16a34a"></i> Free tier — 5 docs/mo</span>
+        <span><i data-lucide="check-circle" style="width:13px;height:13px;color:#16a34a"></i> Free — 3 docs/week</span>
         <span><i data-lucide="lock" style="width:13px;height:13px"></i> Your files stay private</span>
         <span><i data-lucide="clock" style="width:13px;height:13px"></i> Results in ~10 seconds</span>
       </div>
@@ -1003,6 +1071,33 @@
         </div>
       </div>
 
+    </div>
+  </section>
+
+  <!-- ── STATS BAR ────────────────────────────────── -->
+  <section class="stats-bar">
+    <div class="container">
+      <div class="stats-bar-grid">
+        <div class="stat-item">
+          <div class="stat-number" data-target="8400" data-suffix="+">8,400+</div>
+          <div class="stat-label">Documents analyzed</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <div class="stat-number">~8s</div>
+          <div class="stat-label">Average processing time</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <div class="stat-number" data-target="16" data-suffix="">16</div>
+          <div class="stat-label">Languages supported</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <div class="stat-number">100%</div>
+          <div class="stat-label">Private — files deleted after analysis</div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -1308,7 +1403,7 @@
           <div class="pricing-features">
             <div class="pf-item">
               <div class="pf-check"><i data-lucide="check" style="width:10px;height:10px"></i></div>
-              3 documents per month
+              3 documents per week
             </div>
             <div class="pf-item">
               <div class="pf-check"><i data-lucide="check" style="width:10px;height:10px"></i></div>
@@ -1323,7 +1418,7 @@
               Markdown export
             </div>
           </div>
-          <button class="btn-plan btn-plan-free" onclick="window.location.href='/app.html'">Get started free</button>
+          <button class="btn-plan btn-plan-free" onclick="window.location.href='/app'">Get started free</button>
         </div>
 
         <!-- Pro -->
@@ -1370,7 +1465,7 @@
     <div class="container">
       <h2>Ready to stop reading, start acting?</h2>
       <p>Drop your first PDF in under 10 seconds. No account needed to try.</p>
-      <a class="btn-primary-lg" href="/app.html">
+      <a class="btn-primary-lg" href="/app">
         <i data-lucide="sparkles" style="width:16px;height:16px"></i>
         Try PDFClarify free
       </a>
@@ -1497,7 +1592,7 @@
 
         <h3>5. Free and Pro tiers</h3>
         <ul>
-          <li><strong>Free tier:</strong> 5 documents per month, up to 50 pages each. We reserve the right to adjust free tier limits with 14 days' notice.</li>
+          <li><strong>Free tier:</strong> 3 documents per week. We reserve the right to adjust free tier limits with 14 days' notice.</li>
           <li><strong>Pro tier:</strong> Billed monthly. Cancellable at any time. No refunds for partial months unless required by applicable law.</li>
         </ul>
 
@@ -1557,11 +1652,11 @@
         const data = await res.json();
         if (data.user) {
           // User is logged in — logo goes to dashboard, nav shows Dashboard button
-          document.getElementById('logo-link').href = '/dashboard.html';
+          document.getElementById('logo-link').href = '/dashboard';
           const actions = document.querySelector('.nav-actions');
           actions.innerHTML = `
             <span style="font-size:13px;color:var(--text-muted);">${data.user.email}</span>
-            <a class="btn-primary" href="/dashboard.html">
+            <a class="btn-primary" href="/dashboard">
               <i data-lucide="layout-dashboard" style="width:14px;height:14px"></i>
               Dashboard
             </a>`;
@@ -1603,6 +1698,66 @@
         proDesc.textContent     = 'For power users who process documents every day.';
         proCta.textContent      = 'Get Pro — $9/mo';
       }
+    });
+
+    // ── Scroll fade-in animations ──────────────────────
+    const scrollObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          scrollObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.how-card, .uc-card, .feature-text, .screenshot-card, .pricing-card').forEach((el, i) => {
+      el.classList.add('fade-up');
+      el.style.transitionDelay = `${(i % 3) * 0.1}s`;
+      scrollObserver.observe(el);
+    });
+
+    // ── Animated counters ──────────────────────────────
+    function animateCount(el, target, suffix) {
+      const duration = 1400;
+      let startTs = null;
+      const step = (ts) => {
+        if (!startTs) startTs = ts;
+        const p = Math.min((ts - startTs) / duration, 1);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(eased * target).toLocaleString() + suffix;
+        if (p < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }
+
+    const statsSection = document.querySelector('.stats-bar');
+    if (statsSection) {
+      const counterObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.querySelectorAll('[data-target]').forEach(el => {
+              animateCount(el, parseInt(el.dataset.target), el.dataset.suffix ?? '');
+            });
+            counterObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.4 });
+      counterObserver.observe(statsSection);
+    }
+
+    // ── Toast helper ───────────────────────────────────
+    function showToast(msg) {
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.textContent = msg;
+      document.body.appendChild(t);
+      requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
+      setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3500);
+    }
+
+    // ── Pro CTA ────────────────────────────────────────
+    document.getElementById('pro-cta').addEventListener('click', () => {
+      showToast('🚀 Pro plan is coming soon — stay tuned!');
     });
   </script>
 </body>
